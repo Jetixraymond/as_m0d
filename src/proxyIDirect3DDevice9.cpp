@@ -736,183 +736,6 @@ void RenderMap ( void )
 	RenderMapDot( &self->base.matrix[4 * 3], &self->base.matrix[4 * 3], D3DCOLOR_XRGB(255, 255, 255), NULL );
 }
 
-void RenderPedHPBar ( void )
-{
-	if ( !set.left_bottom_bars_enable )
-		return;
-
-	struct actor_info	*info = actor_info_get( ACTOR_SELF, 0 );
-	char				text[32];
-	int					bottom, fontHeight;
-
-	if ( info == NULL )
-		return;
-
-	bottom = pPresentParam.BackBufferHeight;
-	fontHeight = (int)pD3DFontFixed->DrawHeight() - 1;
-
-	render->D3DBoxi( 0, bottom - fontHeight, 101, fontHeight, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-	render->D3DBoxi( 0, bottom - fontHeight + 1, (int)info->hitpoints, fontHeight - 2, D3DCOLOR_ARGB(127, 191, 0, 0), 100 );
-	_snprintf_s( text, sizeof(text)-1, "Health: %d", (int)info->hitpoints );
-	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - fontHeight), D3DCOLOR_XRGB(255, 255, 255), text );
-
-	render->D3DBoxi( 0, bottom - 20, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-	if ( info->armor == NULL )
-	{
-		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)), D3DCOLOR_XRGB(255, 255, 255), "No armor" );
-	}
-	else
-	{
-		render->D3DBoxi( 0, bottom - (fontHeight*2) + 1, (int)info->armor, fontHeight - 2, D3DCOLOR_ARGB(127, 255, 255, 255), 100 );
-		_snprintf_s( text, sizeof(text)-1, "Armor: %d", (int)info->armor );
-		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)), D3DCOLOR_XRGB(255, 255, 255), text );
-	}
-}
-
-void RenderVehicleHPBar ( void )
-{
-	if ( !set.left_bottom_bars_enable )
-		return;
-
-	struct actor_info	*pinfo = actor_info_get( ACTOR_SELF, 0 );
-	struct vehicle_info *vinfo = vehicle_info_get( VEHICLE_SELF, 0 );
-	char				text[32];
-	int					hp, bottom, barHeight, fontHeight;
-	float				speed;
-
-	if ( vinfo == NULL )
-		return;
-	if ( pinfo == NULL )
-		return;
-
-	bottom = pPresentParam.BackBufferHeight;
-	barHeight = (int)pD3DFont->DrawHeight() - 5;
-	fontHeight = (int)pD3DFontFixed->DrawHeight() - 2;
-
-	if ( vinfo->hitpoints > 1000.0f )
-		hp = 100;
-	else
-		hp = (int)( vinfo->hitpoints / 10.0f );
-
-	render->D3DBoxi( 0, bottom - fontHeight, 101, fontHeight + 2, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-	render->D3DBoxi( 0, bottom - fontHeight + 1, hp, fontHeight, D3DCOLOR_ARGB(127, 191, 0, 0), 1000 );
-	_snprintf_s( text, sizeof(text)-1, "VHealth: %d", hp );
-	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - fontHeight - 1), D3DCOLOR_XRGB(255, 255, 255), text );
-
-	if ( !set.speedometer_old_enable )
-	{
-		render->D3DBoxi( 0, bottom - (fontHeight*2), 101, fontHeight + 2, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-		render->D3DBoxi( 0, bottom - (fontHeight*2) + 1, (int)pinfo->hitpoints, fontHeight, D3DCOLOR_ARGB(127, 191, 0, 0), 100 );
-		if ( pinfo->armor != NULL )
-			render->D3DBoxi( 0, bottom - (fontHeight*2), (int)pinfo->armor, 8, D3DCOLOR_ARGB(127, 255, 255, 255), 100 );
-		_snprintf_s( text, sizeof(text)-1, "PHealth: %d", (int)pinfo->hitpoints );
-		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2)  - 1), D3DCOLOR_XRGB(255, 255, 255), text );
-	}
-	else if ( !cheat_state->vehicle.air_brake )
-	{
-		float	spood = vect3_length( vinfo->speed );
-		render->D3DBoxi( 0, bottom - barHeight - fontHeight, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-		render->D3DBoxi( 0, bottom - barHeight - fontHeight + 1, (int)(spood * 64), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-		_snprintf_s( text, sizeof(text)-1, "%0.2f km/h", (float)(spood * 170) );
-		pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2) - 1), D3DCOLOR_XRGB(255, 255, 255), text );
-	}
-
-	// acceleration/distance speed
-	static float	speed_last;
-	static float	speed_lastVect[3];
-	static float	speed_nowVect[3];
-	static float	speed_dist;
-	static float	speed_secondsLastCheck = 0.0f;
-	static float	speed_now;
-	static float	speed_acceleration;
-
-	// update our data about position, speed, acceleration
-	if ( (TIME_TO_DOUBLE(time_get()) - speed_secondsLastCheck) > 0.10f )
-	{
-		////////////////////
-		// distance speed //
-		////////////////////
-		vect3_copy( speed_nowVect, speed_lastVect );
-		vect3_copy( &vinfo->base.matrix[4 * 3], speed_nowVect );
-		speed_dist = vect3_dist( speed_lastVect, speed_nowVect ) / ( TIME_TO_DOUBLE(time_get()) - (float)speed_secondsLastCheck );
-
-		//////////
-		// m/ss //
-		//////////
-		speed_last = speed_now;
-		speed_now = ( vect3_length(vinfo->speed) * 170.0f ) / 3.6f;
-		speed_acceleration = ( speed_now - speed_last ) / ( TIME_TO_DOUBLE(time_get()) - speed_secondsLastCheck );
-		speed_secondsLastCheck = TIME_TO_DOUBLE( time_get() );
-	}
-
-	// distance speed while air braking
-	if ( cheat_state->vehicle.air_brake )
-	{
-		// speedometer - analog (needle)
-		speed = speed_dist * ( 3.43f / 170.0f );
-
-		// speedometer - digital (numbers above health)
-		if ( set.speedometer_old_enable )
-		{
-			render->D3DBoxi( 0, bottom - barHeight - fontHeight, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-			render->D3DBoxi( 0, bottom - barHeight - fontHeight + 1, (int)(speed_dist * 1.3f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-			_snprintf_s( text, sizeof(text)-1, "%0.2f km/h", (float)(speed_dist * 3.43f) );
-			pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - (fontHeight*2) - 1), D3DCOLOR_XRGB(255, 255, 255), text );
-		}
-	}
-	else
-	{
-		// air brake deactivated - set the speedometer speed to real speed
-		speed = vect3_length( vinfo->speed );
-	}
-
-	if ( set.speedometer_enable )
-	{
-		if ( speed > 260.0f )
-			speed = 260.0f;
-
-		static float	mult = set.speedometer_multiplier;
-
-		float			rotationNeedle = 0.0f;
-		D3DXMATRIX		mat;
-
-		rotationNeedle = DEGTORAD( (90.0f / 100.0f) * ((speed * mult) * 1.55f) );
-		rotationNeedle /= 2;
-		if ( rotationNeedle > 3.29f )
-			rotationNeedle = 3.29f;
-
-		D3DXVECTOR2 axisSpeedo = D3DXVECTOR2( speedoPos.x, speedoPos.y );
-		D3DXVECTOR2 axisNeedle = D3DXVECTOR2( (130.00f * needlePos.x), (152.00f * needlePos.y) );
-
-		if ( !gta_menu_active() && !KEY_DOWN(VK_TAB) )
-		{
-			if ( (sSpeedoPNG) && (tSpeedoPNG) && (sNeedlePNG) && (tNeedlePNG) )
-			{
-				D3DXMatrixTransformation2D( &mat, NULL, 0.0f, &needlePos, &axisNeedle, 0.0f, &axisSpeedo );
-				sSpeedoPNG->Begin( D3DXSPRITE_ALPHABLEND );
-				sSpeedoPNG->SetTransform( &mat );
-				sSpeedoPNG->Draw( tSpeedoPNG, NULL, NULL, NULL, 0xCCFFFFFF );
-				sSpeedoPNG->End();
-
-				D3DXMatrixTransformation2D( &mat, NULL, 0.0f, &needlePos, &axisNeedle, rotationNeedle, &axisSpeedo );
-				sNeedlePNG->Begin( D3DXSPRITE_ALPHABLEND );
-				sNeedlePNG->SetTransform( &mat );
-				sNeedlePNG->Draw( tNeedlePNG, NULL, NULL, NULL, 0xCCFFFFFF );
-				sNeedlePNG->End();
-			}
-		}
-	}
-
-	// acceleration meter
-	render->D3DBoxi( 0, bottom - 30, 101, 10, D3DCOLOR_ARGB(127, 0, 0, 0), NULL );
-	if ( speed_acceleration <= -0.01f )
-		render->D3DBoxi( 0, bottom - barHeight - 19, (int)(speed_acceleration * -4.8f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-	else
-		render->D3DBoxi( 0, bottom - barHeight - 19, (int)(speed_acceleration * 4.8f), 8, D3DCOLOR_ARGB(127, 191, 191, 0), 100 );
-	_snprintf_s( text, sizeof(text)-1, "%0.2f m/ss", (float)(speed_acceleration) );
-	pD3DFontFixed->PrintShadow( (float)(2), (float)(bottom - barHeight - 21), D3DCOLOR_XRGB(255, 255, 255), text );
-
-}
 
 // for renderPlayerTags()
 struct playerTagInfo
@@ -3654,16 +3477,17 @@ void renderHandler()
 	( x ) += pD3DFont->DrawLength( text );
 
 #define HUD_TEXT_TGL( x, color, text ) \
-	HUD_TEXT( x, color_text, "[" ); \
-	HUD_TEXT( x, color, text ); \
-	HUD_TEXT( x, color_text, "] " )
+		HUD_TEXT( x, color_text, "" ); \
+		HUD_TEXT( x, color, text ); \
+		HUD_TEXT( x, color_text, " " )
+
 
 	char		buf[256];
 	float		x = 0.0f;
 
-	uint32_t	color_text = D3DCOLOR_ARGB( 191, 255, 255, 255 );
-	uint32_t	color_enabled = D3DCOLOR_ARGB( 191, 63, 255, 63 );
-	uint32_t	color_disabled = D3DCOLOR_ARGB( 191, 255, 255, 255 );
+	uint32_t	color_text = D3DCOLOR_ARGB( 255, 255, 255, 255 );
+	uint32_t	color_enabled = D3DCOLOR_ARGB( 191, 148, 0, 211 );
+	uint32_t	color_disabled = D3DCOLOR_ARGB( 255, 255, 255, 255 );
 
 	if ( isBeginRenderWIN )
 	{
@@ -3716,15 +3540,13 @@ void renderHandler()
 					if ( gta_menu_active() )
 						goto no_render;
 
-				if ( set.left_bottom_bars_enable )
-					( x ) += 102.f;
-
-				if ( set.hud_draw_bar )
+				if( !gta_menu_active() )
 				{
-					uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green, hud_bar->blue );
-
-					render->D3DBoxi( (int)x - 1, (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
-									 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
+					char timebuf[256]; 
+					SYSTEMTIME time; 
+					GetLocalTime(&time);       
+					sprintf(timebuf, "%02d:%02d:%02d", time.wHour, time.wMinute, time.wSecond);       
+					HUD_TEXT_TGL( x, D3DCOLOR_XRGB( 255, 255, 255 ), timebuf);  
 				}
 
 				if ( set.hud_indicator_inv )
@@ -3755,15 +3577,15 @@ void renderHandler()
 						color_fps = D3DCOLOR_XRGB( 200, 0, 0 );
 					if ( pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled() )
 					{
-						_snprintf_s( buf, sizeof(buf)-1, "%0.0f (%d)", m_FPS, *(int *)0xC1704C );
+						_snprintf_s( buf, sizeof(buf)-1, "FPS:{FFFFFF} %0.0f (%d)", m_FPS, *(int *)0xC1704C );
 					}
 					else
 					{
-						_snprintf_s( buf, sizeof(buf)-1, "%0.0f", m_FPS );
+						_snprintf_s( buf, sizeof(buf)-1, "FPS:{FFFFFF} %0.0f", m_FPS );
 					}
 
 					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
-										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, color_fps, buf );
+										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf );
 				}
 			}
 
@@ -3785,7 +3607,6 @@ void renderHandler()
 					HUD_TEXT_TGL( x, cheat_state->vehicle.freezerot ? color_enabled : color_disabled, "FreezeRot" );
 				}
 
-				RenderVehicleHPBar();
 			}
 			else if ( cheat_state->state == CHEAT_STATE_ACTOR )
 			{
@@ -3799,23 +3620,22 @@ void renderHandler()
 				{
 					HUD_TEXT_TGL( x, cheat_state->actor.fly_on ? color_enabled : color_disabled, "Fly" );
 				}
-
-				RenderPedHPBar();
 			} // end CHEAT_STATE_ACTOR
 
 			if ( cheat_state->state != CHEAT_STATE_NONE )
 			{
-				if ( set.hud_indicator_pos )
+				if (set.hud_indicator_pos)
 				{
 					float	*coord =
 						( cheat_state->state == CHEAT_STATE_VEHICLE )
 							? cheat_state->vehicle.coords : cheat_state->actor.coords;
 
-					_snprintf_s( buf, sizeof(buf)-1, "  %.2f, %.2f, %.2f  %d", coord[0], coord[1], coord[2],
+					_snprintf_s( buf, sizeof(buf)-1, "Coords: {FFFFFF}%0.2f %0.2f %0.2f  %d", coord[0], coord[1], coord[2],
 								 gta_interior_id_get() );
-					HUD_TEXT( x, color_text, buf );
+					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 60,
+										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf );
 				}
-			}				// end != CHEAT_STATE_NONE
+			}
 
 			if ( cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000) )
 			{

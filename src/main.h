@@ -28,7 +28,7 @@
 
 #define M0D_FOLDER		"mod_sa\\"
 #define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.4.1.2 // blast.hk"
+#define M0D_VERSION		"4.4.1.2 // Friedmann"
 #define SAMP_VERSION	"SA:MP 0.3.7"
 #define M0D_DEV_ADVANCEDINFO
 
@@ -215,6 +215,7 @@
 
 #include "A__Settings.h"
 #include "A_Funcs.h"
+#include "A_Cmd.h"
 
 // main.cpp functions
 void							traceLastFunc ( const char *szFunc );

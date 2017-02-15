@@ -82,13 +82,6 @@ void OnCloseDialog(void *pDialog)
 
 	case DialogStyle::DIALOG_STYLE_INPUT:
 	case DialogStyle::DIALOG_STYLE_PASSWORD:
-	{
-		char input[256];
-		wchar_t *inputBuf = *(wchar_t **)(uint32_t(Dialog.pEditBox) + 0x4D);
-		UnicodeToAnsi(inputBuf, input);
-		break;
-	}
-
 	case DialogStyle::DIALOG_STYLE_MSGBOX:
 	{
 		switch (Dialog.DialogID)
