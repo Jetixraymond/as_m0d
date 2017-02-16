@@ -27,8 +27,9 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #define M0D_FOLDER		"mod_sa\\"
-#define M0D_NAME		"mod_sa"
-#define M0D_VERSION		"4.4.1.2 // Friedmann"
+#define M0D_NAME		"Admin_m0d"
+#define M0D_VERSION     "0.0.0.1 (beta)"
+#define M0D_AUTHOR      "Marko_Friedmann"
 #define SAMP_VERSION	"SA:MP 0.3.7"
 #define M0D_DEV_ADVANCEDINFO
 

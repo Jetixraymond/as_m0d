@@ -39,6 +39,7 @@
 #define TYPE_GUI		14
 #define TYPE_KEYCOMBO	15
 #define TYPE_NETPATCH	16
+#define TYPE_RGB_COLOR	17
 
 #define LTRIM( str ) \
 	while ( *(str) == '\t' || *(str) == ' ' ) \
@@ -699,6 +700,44 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_menu_inc, "add" );
 	if ( (ent = ini_register_entry("key_menu_mousecontrol", TYPE_KEYCOMBO)) != NULL )
 		ini_register_data( ent, &set.key_menu_mousecontrol, "lshift" );
+
+	/*admin settings*/
+	if ((ent = ini_register_entry("hud_indicator_chatcolors", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.hud_indicator_chatcolors, "true");
+
+	if ((ent = ini_register_entry("auto_chatcolors", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolor, "true");
+
+	if ((ent = ini_register_entry("chatcolors_sms", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolors_sms, "true");
+
+	if ((ent = ini_register_entry("chatcolors_report", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolors_report, "false");
+
+	if ((ent = ini_register_entry("chatcolors_feedback", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolors_feedback, "false");
+
+	if ((ent = ini_register_entry("chatcolors_reportr", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolors_reportr, "true");
+
+	if ((ent = ini_register_entry("chatcolors_support", TYPE_BOOL)) != NULL)
+		ini_register_data(ent, &A_Set.chatcolors_support, "true");
+
+	if ((ent = ini_register_entry("color_sms", TYPE_RGB_COLOR)) != NULL)
+		ini_register_data(ent, &A_Set.sms, "FFFFFF");
+
+	if ((ent = ini_register_entry("color_report", TYPE_RGB_COLOR)) != NULL)
+		ini_register_data(ent, &A_Set.report, "FFFFFF");
+
+	if ((ent = ini_register_entry("color_reportr", TYPE_RGB_COLOR)) != NULL)
+		ini_register_data(ent, &A_Set.reportr, "FFFFFF");
+
+	if ((ent = ini_register_entry("color_support", TYPE_RGB_COLOR)) != NULL)
+		ini_register_data(ent, &A_Set.support, "FFFFFF");
+
+	if ((ent = ini_register_entry("color_feedback", TYPE_RGB_COLOR)) != NULL)
+		ini_register_data(ent, &A_Set.feedback, "FFFFFF");
+	/*end admin settings*/
 
 	// custom GUI settings
 	if ( (ent = ini_register_entry("hud_draw_bar", TYPE_BOOL)) != NULL )
@@ -1424,6 +1463,15 @@ static void ini_entry_parse_type ( struct ini_entry *ent, int idx, const char *v
 		++iNetPatchesCount;
 
 		ok = 1;
+		break;
+	}
+
+	case TYPE_RGB_COLOR:
+	{
+		if (split->argc != 1)
+			goto wrong_argc;
+		if (stringToD3DColor(split->argv[0], (DWORD *)ent_data->data))
+			ok = 1;
 		break;
 	}
 

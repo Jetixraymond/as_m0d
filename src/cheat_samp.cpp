@@ -23,6 +23,21 @@
 
 #include "main.h"
 
+#define D3DCOLOR_COMPARE(color,r,g,b) \
+    (color >> 8)==((D3DCOLOR)((((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
+#define D3DCOLOR_RGBX(r,g,b) \
+    ((D3DCOLOR)((((r)&0xff)<<24)|(((g)&0xff)<<16)|(((b)&0xff)<<8)|(0xff)))
+#define D3DCOLOR_RGBX(color) \
+    ((D3DCOLOR)(color << 8)|0xff)
+
+void changeColorClientMsg(BitStream* bitStream, DWORD dwNewColor, DWORD dwLen, const char* msg)
+{
+	bitStream->ResetWritePointer();
+	bitStream->Write(dwNewColor);
+	bitStream->Write(dwLen);
+	bitStream->Write(msg, dwLen);
+}
+
 int			g_iJoiningServer = 0;
 int			iClickWarpEnabled = 0;
 int			g_iNumPlayersMuted = 0;
@@ -216,44 +231,6 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 	{
 		switch (id)
 		{
-			case RPC_SetPlayerHealth:
-			{
-				if (isCheatPanicEnabled() || !set.enable_extra_godmode || !cheat_state->_generic.hp_cheat) break;
-
-				actor_info *self = actor_info_get(ACTOR_SELF, NULL);
-				if (self)
-				{
-					BitStream bsData(rpcParams->input, rpcParams->numberOfBitsOfData / 8, false);
-					float fHealth;
-					bsData.Read(fHealth);
-					if (fHealth < self->hitpoints)
-					{
-						cheat_state_text("Warning: Server tried change your health to %0.1f", fHealth);
-						return; // exit from the function without processing RPC
-					}
-				}
-				break;
-			}
-			case RPC_SetVehicleHealth:
-			{
-				if (isCheatPanicEnabled() || !set.enable_extra_godmode || !cheat_state->_generic.hp_cheat) break;
-
-				vehicle_info *vself = vehicle_info_get(VEHICLE_SELF, NULL);
-				if (vself)
-				{
-					BitStream bsData(rpcParams->input, rpcParams->numberOfBitsOfData / 8, false);
-					short sId;
-					float fHealth;
-					bsData.Read(sId);
-					bsData.Read(fHealth);
-					if (sId == g_Players->pLocalPlayer->sCurrentVehicleID && fHealth < vself->hitpoints)
-					{
-						cheat_state_text("Warning: Server tried change your vehicle health to %0.1f", fHealth);
-						return; // exit from the function without processing RPC
-					}
-				}
-				break;
-			}
 			case RPC_ClientMessage:
 			{
 				if (isCheatPanicEnabled() || !set.anti_spam && !set.chatbox_logging) break;
@@ -273,73 +250,51 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 				bsData.Read(szMsg, dwStrLen);
 				szMsg[dwStrLen] = '\0';
 
-				if (set.anti_spam && (strcmp(last_servermsg, szMsg) == 0 && GetTickCount() < allow_show_again))
-					return; // exit without processing rpc
-
-				// might be a personal message by muted player - look for name in server message
-				// ignore message, if name was found
-				if (set.anti_spam && g_iNumPlayersMuted > 0)
+				if (A_Set.chatcolor)
 				{
-					int i, j;
-					char *playerName = NULL;
-					for (i = 0, j = 0; i < SAMP_MAX_PLAYERS && j < g_iNumPlayersMuted; i++)
+					if (D3DCOLOR_COMPARE(dwColor, 217, 119, 0))
 					{
-						if (g_bPlayerMuted[i])
+						if (A_Set.chatcolors_report && strstr(szMsg, "Жалоба от ") && strstr(szMsg, " на "))
 						{
-							playerName = (char *)getPlayerName(i);
-
-							if (playerName == NULL)
-							{
-								// Player not connected anymore - remove player from muted list
-								g_bPlayerMuted[i] = false;
-								g_iNumPlayersMuted--;
-								continue;
-							}
-							else if (strstr(szMsg, playerName) != NULL)
-							{
-								return;
-							}
-							j++;
+							changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.report), dwStrLen, szMsg);
+							break;
 						}
+						else
+							if (A_Set.chatcolors_feedback && strstr(szMsg, "Репорт от"))
+							{
+								changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.feedback), dwStrLen, szMsg);
+								break;
+							}
+							else
+								if (A_Set.chatcolors_reportr && strstr(szMsg, "<-Ответ К"))
+								{
+									changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.reportr), dwStrLen, szMsg);
+									break;
+								}
 					}
+					else
+						if (D3DCOLOR_COMPARE(dwColor, 255, 165, 0))
+						{
+							if (A_Set.chatcolors_support)
+								if (strstr(szMsg, "<SUPPORT-CHAT> ") || strstr(szMsg, "<-") && strstr(szMsg, " to ")
+									&& strstr(szMsg, ": ") || strstr(szMsg, "->Вопрос") && strstr(szMsg, ": "))
+								{
+									changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.support), dwStrLen, szMsg);
+									break;
+								}
+						}
+						else
+							if (D3DCOLOR_COMPARE(dwColor, 255, 255, 0))
+							{
+								if (A_Set.chatcolors_sms)
+									if (strstr(szMsg, "SMS: ") && (strstr(szMsg, "Отправитель: ") || strstr(szMsg, "Получатель: ")))
+									{
+										changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.sms), dwStrLen, szMsg);
+										break;
+									}
+							}
 				}
-				if (set.chatbox_logging)
-					LogChatbox(false, "%s", szMsg);
-				strncpy_s(last_servermsg, szMsg, sizeof(last_servermsg) - 1);
-				allow_show_again = GetTickCount() + 5000;
-				break;
-			}
-			case RPC_Chat:
-			{
-				if (isCheatPanicEnabled() || !set.anti_spam && !set.chatbox_logging) break;
 
-				BitStream		bsData(rpcParams->input, rpcParams->numberOfBitsOfData / 8, false);
-				static char		last_clientmsg[SAMP_MAX_PLAYERS][256];
-				static DWORD	allow_show_again = 0;
-				uint16_t		playerId = uint16_t(-1);
-				uint8_t			byteTextLen;
-				char			szText[256];
-
-				if (cheat_state->_generic.cheat_panic_enabled)
-					break;
-
-				bsData.Read(playerId);
-				if (isBadSAMPPlayerID(playerId))
-					break;
-
-				bsData.Read(byteTextLen);
-				bsData.Read(szText, byteTextLen);
-				szText[byteTextLen] = '\0';
-
-				if (set.anti_spam && ((strcmp(last_clientmsg[playerId], szText) == 0 && GetTickCount() < allow_show_again) || (g_iNumPlayersMuted > 0 && g_bPlayerMuted[playerId])))
-					return; // exit without processing rpc
-
-				// nothing to copy anymore, after chatbox_logging, so copy this before
-				strncpy_s(last_clientmsg[playerId], szText, sizeof(last_clientmsg[playerId]) - 1);
-
-				if (set.chatbox_logging)
-					LogChatbox(false, "%s: %s", getPlayerName(playerId), szText);
-				allow_show_again = GetTickCount() + 5000;
 				break;
 			}
 		} // switch
@@ -439,6 +394,59 @@ bool OnReceivePacket(Packet *p)
 			g_stStreamedOutInfo.fPlayerPos[playerID][2] = sPos[2];
 		}
 	}
+	else
+		if (p->data[0] == ID_PLAYER_SYNC)
+		{
+			BitStream	bsData(p->data, p->length, false);
+			static DWORD dwTime[SAMP_MAX_PLAYERS], dwTimeGM;
+			short pId;
+			bool bVal;
+			float fVec;
+			short surf_id = -1;
+			float fpos[3];
+			bsData.Read(pId);
+			bsData.Read(bVal);
+			if (bVal)
+				bsData.IgnoreBits(16);
+			bsData.Read(bVal);
+			if (bVal)
+				bsData.IgnoreBits(16);
+			bsData.IgnoreBits(16);
+			bsData.Read(fpos);
+			bsData.IgnoreBits(76);
+			bsData.Read(fVec);
+			if (fVec!=0.f)
+				bsData.IgnoreBits(48);
+			bsData.Read(bVal);
+			if (bVal)
+			{
+				bsData.Read(surf_id);
+				if (surf_id == 1 && GetTickCount() - dwTimeGM > 3000)
+				{
+					float offs = g_Players->pRemotePlayer[pId]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.matrix[14] - fpos[2];
+					if (abs(offs - 15) < 0.6 || abs(offs - 1000) < 0.6)
+					{
+						addMessageToChatWindow("<Warning> Игрок: %s[%d] использует паблик ГМ.", getPlayerName(pId), pId);
+						dwTimeGM = GetTickCount();
+					}
+				}
+				int fOffs[3];
+				bsData.Read(fOffs);
+				if (surf_id != -1 && (fOffs[0] >= 0xFF800000 || fOffs[1] >= 0xFF800000 || fOffs[2] >= 0xFF800000))
+				{
+					if (GetTickCount() - dwTime[pId] > 15000)
+					{
+						addMessageToChatWindow("<Warning>  Игрок: %s[%d] использует паблик ГМ.", getPlayerName(pId), pId);
+						dwTime[pId] = GetTickCount();
+					}
+					bsData.SetWriteOffset(bsData.GetReadOffset() - 112);
+					bsData.Write((short)0);
+					bsData.Write((float)0.0f);
+					bsData.Write((float)0.0f);
+					bsData.Write((float)0.0f);
+				}
+			}
+		}
 	return true;
 }
 

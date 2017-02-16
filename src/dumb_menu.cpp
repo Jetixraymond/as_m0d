@@ -50,6 +50,11 @@
 #define ID_MENU_HUDINDICATORS	22
 #define ID_MENU_INTERIORS		23
 
+#define ID_MENU_ADMINTOOLS      181
+#define ID_MENU_CHAT            147
+#define ID_CHATCOLOURS			65
+#define ID_MENU_ADMINS			66
+
 #ifdef __CHEAT_VEHRECORDING_H__
 #define ID_MENU_ROUTES			26
 #define ID_MENU_ROUTES_LOAD		27
@@ -1182,6 +1187,9 @@ static int menu_callback_cheats ( int op, struct menu_item *item )
 			return cheat_state->_generic.money;
 
 		case ID_CHEAT_MODS:
+			return 0;
+
+		case ID_MENU_ADMINS:
 			return 0;
 
 		case ID_CHEAT_PROT:
@@ -2464,6 +2472,29 @@ static int menu_callback_specialaction ( int op, struct menu_item *item )
 	return 0;
 }
 
+static int menu_callback_admintools(int op, struct menu_item *item)
+{
+	switch (op)
+	{
+	case MENU_OP_ENABLED:
+		switch (item->id)
+		{
+		case ID_CHATCOLOURS:
+			return A_Set.chatcolor;
+		}
+		break;
+
+	case MENU_OP_SELECT:
+		switch (item->id)
+		{
+		case ID_CHATCOLOURS:
+			A_Set.chatcolor ^= true;
+			break;
+		}
+	}
+	return 0;
+}
+
 static int menu_callback_hudindicators ( int op, struct menu_item *item )
 {
 	if ( op == MENU_OP_ENABLED )
@@ -2797,7 +2828,7 @@ void menu_maybe_init ( void )
 	if ( menu_init )
 		return;
 
-	struct menu *menu_main, *menu_cheats, *menu_cheats_mods, *menu_cheats_inv, *
+	struct menu *menu_main, *menu_cheats, *menu_admintool, *menu_cheats_mods, *menu_chat_colors, *menu_cheats_inv, *
 		menu_cheats_weather, *menu_cheats_time, *menu_weapons, *menu_vehicles, *
 			menu_misc, *menu_hudindicators, *menu_patches, *menu_players, *
 				menu_players_warp, *menu_players_vehwarp,
@@ -2806,7 +2837,7 @@ void menu_maybe_init ( void )
 #endif
 
 	//*menu_cheats_handling,
-	*menu_player_info, *menu_players_mute, *menu_sampmisc, *menu_spoof_weapon, *menu_vehicles_instant, 
+	*menu_player_info, *menu_players_mute, *menu_sampmisc, *menu_spoof_weapon, *menu_vehicles_instant,
 	*menu_gamestate, *menu_specialaction, *menu_teleobject, *menu_telepickup, *menu_samppatches,
 	*menu_netpatches_inrpc, *menu_netpatches_outrpc, *menu_netpatches_inpacket, *menu_netpatches_outpacket;
 
@@ -2817,6 +2848,7 @@ void menu_maybe_init ( void )
 
 	/* main menu */
 	menu_main = menu_new( NULL, ID_MENU_MAIN, menu_callback_main );
+	menu_admintool = menu_new(menu_main, ID_MENU_ADMINTOOLS, menu_callback_admintools);
 	menu_cheats = menu_new( menu_main, ID_MENU_CHEATS, menu_callback_cheats );
 	menu_patches = menu_new( menu_main, ID_MENU_PATCHES, menu_callback_patches );
 	menu_weapons = menu_new( menu_main, ID_MENU_WEAPONS, menu_callback_weapons );
@@ -2826,6 +2858,7 @@ void menu_maybe_init ( void )
 	/* main menu -> cheats */
 	menu_cheats_inv = menu_new( menu_cheats, ID_MENU_CHEATS_INVULN, menu_callback_cheats_invuln );
 	menu_cheats_mods = menu_new( menu_cheats, ID_MENU_CHEATS_MODS, menu_callback_cheats_mods );
+	menu_chat_colors = menu_new(menu_admintool, ID_MENU_CHAT, menu_callback_admintools);
 	menu_cheats_weather = menu_new( menu_cheats, ID_MENU_CHEATS_WEATHER, menu_callback_cheats );
 	// disabled for now until we/mta rework CHandlingEntrySA
 	//menu_cheats_handling = menu_new( menu_cheats, ID_MENU_CHEATS_HANDLING, menu_callback_handling );
@@ -2871,6 +2904,8 @@ void menu_maybe_init ( void )
 
 	/** Menu Items **/
 	/* main menu */
+	menu_item_add(menu_main, NULL, "\tAdmin Samp-RP", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
+	menu_item_add(menu_main, menu_admintool, "Admin Tools", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add( menu_main, NULL, "\tGTA", ID_NONE, MENU_COLOR_SEPARATOR, NULL );
 	menu_item_add( menu_main, menu_cheats, "Cheats", ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_main, menu_weapons, "Weapons", ID_NONE, MENU_COLOR_DEFAULT, NULL );
@@ -2889,6 +2924,9 @@ void menu_maybe_init ( void )
 		snprintf( name, sizeof(name), "SA:MP Patches (%d/%d)", iSAMPPatchesCount, INI_SAMPPATCHES_MAX );
 		menu_item_add( menu_main, menu_samppatches, name, ID_NONE, MENU_COLOR_DEFAULT, NULL );
 	}
+
+	menu_item_add(menu_admintool, menu_chat_colors, "Функции чата", ID_MENU_ADMINS, MENU_COLOR_DEFAULT, NULL);
+	menu_item_add(menu_chat_colors, NULL, "Измененные цвета чата", ID_CHATCOLOURS, MENU_COLOR_DEFAULT, NULL);
 
 	/* main menu -> cheats - menu items */
 	menu_item_add( menu_cheats, menu_cheats_mods, "Vehicle upgrades", ID_CHEAT_MODS, MENU_COLOR_DEFAULT, NULL );

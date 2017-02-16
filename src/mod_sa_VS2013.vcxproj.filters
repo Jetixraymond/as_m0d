@@ -877,6 +877,9 @@
     <ClInclude Include="A__Settings.h">
       <Filter>Admins</Filter>
     </ClInclude>
+    <ClInclude Include="A_Cmd.h">
+      <Filter>Admins</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_sa\C3DMarkerSA.cpp">
@@ -1313,6 +1316,9 @@
       <Filter>Admins</Filter>
     </ClCompile>
     <ClCompile Include="A__Setting.cpp">
+      <Filter>Admins</Filter>
+    </ClCompile>
+    <ClCompile Include="A_Cmd.cpp">
       <Filter>Admins</Filter>
     </ClCompile>
   </ItemGroup>

@@ -60,13 +60,13 @@ CD3DRender				*render = new CD3DRender( 128 );
 // create font objects
 
 // also HUD somehow, the HUD comment below isn't totally right
-CD3DFont				*pD3DFont = new CD3DFont( "Tahoma", 10, FCR_BORDER );
+CD3DFont				*pD3DFont = new CD3DFont( "Tahoma", 9, FCR_BORDER );
 
 //pd3dFont_sampStuff = player info list, player score list, player ESP
-CD3DFont				*pD3DFont_sampStuff = new CD3DFont( "Tahoma", 10, FCR_BORDER );
+CD3DFont				*pD3DFont_sampStuff = new CD3DFont( "Tahoma", 9, FCR_BORDER );
 
 //pD3DFontFixed = cheat_state_msg, HUD
-CD3DFont				*pD3DFontFixed = new CD3DFont( "Small Fonts", 8, FCR_BORDER );
+CD3DFont				*pD3DFontFixed = new CD3DFont( "Tahoma", 9, FCR_BORDER );
 
 //pD3DFontFixedSmall = health under bars (cars, players), vehicle ESP
 CD3DFont				*pD3DFontFixedSmall = new CD3DFont( "Small Fonts", 8, FCR_BORDER );
@@ -88,6 +88,8 @@ struct gui				*gta_hp_bar = &set.guiset[6];
 struct gui				*gta_money_hud = &set.guiset[7];
 
 extern int				iClickWarpEnabled;
+
+char szColorEnable[9] = "{8A2BE2}", szColorText[9] = "{FFFFFF}";
 
 ///////////////////////////////////////////////////////////////////////////////
 // Common D3D functions.
@@ -3495,37 +3497,23 @@ void renderHandler()
 
 		if ( set.d3dtext_hud )
 		{
-			if ( cheat_panic() || cheat_state->state == CHEAT_STATE_NONE )
+			if (cheat_panic() || cheat_state->state == CHEAT_STATE_NONE)
 			{
-				if ( set.flickering_problem )
+				if (set.flickering_problem)
 					goto no_render;
 
-				if( !set.flickering_problem )
+				if (!set.flickering_problem)
 				{
-					if ( iIsSAMPSupported )
+					if (iIsSAMPSupported)
 					{
-						uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
-															   hud_bar->blue );
-						render->D3DBoxi( (int)x - 1,
-										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
-										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-
-						_snprintf_s( buf, sizeof(buf)-1, "%s for %s", NAME, g_szSAMPVer );
-						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), buf );
-					}
-					else
-					{
-						uint32_t	bar_color = D3DCOLOR_ARGB( hud_bar->alpha, hud_bar->red, hud_bar->green,
-															   hud_bar->blue );
-						render->D3DBoxi( (int)x - 1,
-										 (int)(pPresentParam.BackBufferHeight - 1) - (int)pD3DFont->DrawHeight() - 3,
-										 (int)(pPresentParam.BackBufferWidth + 14), 22, bar_color, NULL );
-						HUD_TEXT( x, D3DCOLOR_ARGB(127, 255, 255, 255), NAME );
+						if (!g_renderSAMP_initSAMPstructs)
+						{
+							_snprintf_s(buf, sizeof(buf) - 1, "%s%s%s version %s%s%s\n---------------------------------------------------\nSpecial for %s%s%s by %s%s%s",
+								szColorEnable, M0D_NAME, szColorText, szColorEnable, M0D_VERSION, szColorText, szColorEnable, SAMP_VERSION, szColorText, szColorEnable, M0D_AUTHOR, szColorText);//changee color
+							pD3DFont->PrintShadow(2.0f, (float)(pPresentParam.BackBufferHeight) - pD3DFont->DrawHeight() - 33, color_text, buf);
+						}
 					}
 				}
-
-				// startup logo was here, but damn it works better without it
-				// we should figure out why that is some time
 			}
 			else
 			{
@@ -3552,16 +3540,6 @@ void renderHandler()
 				if ( set.hud_indicator_inv )
 				{
 					HUD_TEXT_TGL( x, cheat_state->_generic.hp_cheat ? color_enabled : color_disabled, "Inv" );
-				}
-
-				if ( set.hud_indicator_weapon )
-				{
-					HUD_TEXT_TGL( x, cheat_state->_generic.weapon ? color_enabled : color_disabled, "Weapon" );
-				}
-
-				if ( set.hud_indicator_freeze )
-				{
-					HUD_TEXT_TGL( x, cheat_state->_generic.vehicles_freeze ? color_enabled : color_disabled, "Freeze" );
 				}
 
 				if ( set.hud_fps_draw )
@@ -3602,11 +3580,10 @@ void renderHandler()
 					HUD_TEXT_TGL( x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly" );
 				}
 
-				if ( set.hud_indicator_freezerot )
+				if (A_Set.hud_indicator_chatcolors && !gta_menu_active())
 				{
-					HUD_TEXT_TGL( x, cheat_state->vehicle.freezerot ? color_enabled : color_disabled, "FreezeRot" );
+					HUD_TEXT_TGL(x, A_Set.chatcolor ? color_enabled : color_disabled, "ChatColors");
 				}
-
 			}
 			else if ( cheat_state->state == CHEAT_STATE_ACTOR )
 			{
@@ -3619,6 +3596,11 @@ void renderHandler()
 				if ( set.hud_indicator_onfoot_fly )
 				{
 					HUD_TEXT_TGL( x, cheat_state->actor.fly_on ? color_enabled : color_disabled, "Fly" );
+				}
+
+				if (A_Set.hud_indicator_chatcolors && !gta_menu_active())
+				{
+					HUD_TEXT_TGL(x, A_Set.chatcolor ? color_enabled : color_disabled, "ChatColors");
 				}
 			} // end CHEAT_STATE_ACTOR
 
