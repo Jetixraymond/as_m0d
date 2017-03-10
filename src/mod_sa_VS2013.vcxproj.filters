@@ -37,6 +37,15 @@
     <Filter Include="Admins">
       <UniqueIdentifier>{399a3b5e-69a5-4e4b-8279-b30d9ebcde02}</UniqueIdentifier>
     </Filter>
+    <Filter Include="json">
+      <UniqueIdentifier>{c8a2ea1c-2fd6-471c-9805-93dc833dfa7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json\headers">
+      <UniqueIdentifier>{7b8814ed-31dc-4dfd-98c8-908648120889}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="json\src">
+      <UniqueIdentifier>{5abd015b-a4e6-4be4-90ef-b8e5ef5f9db3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_sa\game\C3DMarker.h">
@@ -880,6 +889,12 @@
     <ClInclude Include="A_Cmd.h">
       <Filter>Admins</Filter>
     </ClInclude>
+    <ClInclude Include="json\src\lib_json\json_tool.h">
+      <Filter>json\src</Filter>
+    </ClInclude>
+    <ClInclude Include="json\src\lib_json\json_batchallocator.h">
+      <Filter>json\headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="game_sa\C3DMarkerSA.cpp">
@@ -1321,9 +1336,27 @@
     <ClCompile Include="A_Cmd.cpp">
       <Filter>Admins</Filter>
     </ClCompile>
+    <ClCompile Include="json\src\lib_json\json_reader.cpp">
+      <Filter>json\src</Filter>
+    </ClCompile>
+    <ClCompile Include="json\src\lib_json\json_value.cpp">
+      <Filter>json\src</Filter>
+    </ClCompile>
+    <ClCompile Include="json\src\lib_json\json_writer.cpp">
+      <Filter>json\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="mod_sa.def" />
+    <None Include="json\src\lib_json\json_internalarray.inl">
+      <Filter>json\headers</Filter>
+    </None>
+    <None Include="json\src\lib_json\json_internalmap.inl">
+      <Filter>json\headers</Filter>
+    </None>
+    <None Include="json\src\lib_json\json_valueiterator.inl">
+      <Filter>json\headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="rsrc.rc" />

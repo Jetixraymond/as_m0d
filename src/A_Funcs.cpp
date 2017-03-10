@@ -1,5 +1,9 @@
 #include "main.h"
 
+#include <wininet.h>
+#pragma comment ( lib, "Wininet.lib" )
+#include <json/json.h>
+
 const char *szFracktionName[] =
 {
 	"LSPD",
@@ -143,22 +147,34 @@ POINT CursorPos()
 	return CurPos;
 }
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+float GeoDistance(float *start, float *end)
 {
-	if (g_SAMP != nullptr)
-	{
-		switch (uMsg)
-		{
-			//case WM_KEYUP:
-			{
-				//char *key = key_name(wParam);//code key // не определяет shift/alt/ctrl (другие коды клавишь)
-				//addMessageToChatWindow("Key: %s, Code: 0x%X | lParam: 0x%X", key, wParam, lParam);
-			break;
-			}
-		}
-	}
-	return CallWindowProcA(WNDPROC(lOldWndProc), hwnd, uMsg, wParam, lParam);
+	start[0] *= M_PI / 180;
+	start[1] *= M_PI / 180;
+	end[0] *= M_PI / 180;
+	end[1] *= M_PI / 180;
+	float y, x, del = start[1] - end[1];
+	y = sqrt(pow(cos(end[0])*sin(del), 2) + pow(cos(start[0])*sin(end[0]) - sin(start[0])*cos(end[0])*cos(del), 2));
+	x = sin(start[0])*sin(end[0]) + cos(start[0])*cos(end[0])*cos(del);
+	return atan2(y, x) * 6372.795;//km
 }
+
+//LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+//{
+//	if (g_SAMP != nullptr)
+//	{
+//		switch (uMsg)
+//		{
+//			//case WM_KEYUP:
+//			{
+//				//char *key = key_name(wParam);//code key // не определяет shift/alt/ctrl (другие коды клавишь)
+//				//addMessageToChatWindow("Key: %s, Code: 0x%X | lParam: 0x%X", key, wParam, lParam);
+//			break;
+//			}
+//		}
+//	}
+//	return CallWindowProcA(WNDPROC(lOldWndProc), hwnd, uMsg, wParam, lParam);
+//}
 
 LRESULT CALLBACK LLKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
@@ -188,4 +204,179 @@ LRESULT CALLBACK LLKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
 	///UnhookWindowsHookEx(hook);
 	///hook = 0;
 	return CallNextHookEx(hhKeyKook, nCode, wParam, lParam);
+}
+
+void adminMainThread(void)
+{
+	traceLastFunc("adminMainThread()");
+	static DWORD timer = 0;
+	DWORD dwCurrentTime = GetTickCount();
+#pragma region MassHP
+	if (A_Set.bMassHP && dwCurrentTime - timer > 1150)
+	{
+		static unsigned short sPlId = 0;
+		if (sPlId <= A_Set.usMaxPlayerID)
+		{
+			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor->pGTA_Ped != nullptr)
+			{
+				say("/sethp %hu %d", sPlId, A_Set.iHpCount);
+				addMessageToChatWindow("Игроку %s[%d] выдано %d HP", getPlayerName(sPlId), sPlId, A_Set.iHpCount);
+				timer = dwCurrentTime;
+			}
+			sPlId++;
+		}
+		else
+		{
+			A_Set.bMassHP = false;
+			sPlId = 0;
+			addMessageToChatWindow("Выдача HP окончена");
+			MessageBeep(MB_ICONEXCLAMATION);
+		}
+	}
+#pragma endregion
+#pragma region GiveGun
+	if (A_Set.bGiveGuns && dwCurrentTime - timer > 1150)
+	{
+		static unsigned short sPlId = 0;
+		static int iAmmo = 0;
+		if (sPlId <= A_Set.usMaxPlayerID)
+		{
+			if (!iAmmo)
+				iAmmo = A_Set.iAmmoCount;
+
+			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor->pGTA_Ped != nullptr)
+			{
+				if (iAmmo > 999)
+				{
+					say("/givegun %d %d 999", sPlId, A_Set.byteWeaponID);
+					iAmmo -= 999;
+				}
+				else
+				{
+					say("/givegun %d %d %d", sPlId, A_Set.byteWeaponID, iAmmo);
+					addMessageToChatWindow("Игроку %s[%d] выдано оружие", getPlayerName(sPlId), sPlId);
+					sPlId++;
+					iAmmo = A_Set.iAmmoCount;
+				}
+				timer = dwCurrentTime;
+			}
+			else
+			{
+				sPlId++;
+				iAmmo = A_Set.iAmmoCount;
+			}
+		}
+		else
+		{
+			A_Set.bGiveGuns = false;
+			sPlId = 0;
+			iAmmo = 0;
+			addMessageToChatWindow("Выдача оружия окончена");
+			MessageBeep(MB_ICONEXCLAMATION);
+		}
+	}
+#pragma endregion
+#pragma region GunSkills
+	if (A_Set.bSkillGun && !A_Set.bGiveGuns)
+	{
+		A_Set.byteSkillWeaponID++;
+		switch (A_Set.byteSkillWeaponID)
+		{
+		case 0: A_Set.iAmmoCount = 5500; A_Set.byteWeaponID = 31; A_Set.bGiveGuns = true; break;
+		case 1: A_Set.iAmmoCount = 3500; A_Set.byteWeaponID = 24; A_Set.bGiveGuns = true; break;
+		case 2: A_Set.iAmmoCount = 3500; A_Set.byteWeaponID = 25; A_Set.bGiveGuns = true; break;
+		case 3: A_Set.iAmmoCount = 5500; A_Set.byteWeaponID = 29; A_Set.bGiveGuns = true;
+		default:
+			A_Set.bSkillGun = false;
+			A_Set.byteSkillWeaponID = 0;
+		}
+	}
+#pragma endregion
+#pragma region TpPlayers
+	if (A_Set.bMassTP && dwCurrentTime - timer > 1150 && !A_Set.PlayersIDForTP.empty())
+	{
+		USHORT& sPlId = A_Set.PlayersIDForTP.back();
+		if (sPlId <= A_Set.usMaxPlayerID)
+		{
+			say("/gethere %hu", sPlId);
+		}
+		A_Set.PlayersIDForTP.pop_back();
+		timer = dwCurrentTime;
+	}
+#pragma endregion
+	if (A_Set.traces && !A_Set.Tracers.empty())
+	{
+		if (dwCurrentTime - A_Set.Tracers.back().time > 2500)
+			A_Set.Tracers.pop_back();
+	}
+
+
+
+}
+
+void IpQuery(HINTERNET hSession, const std::string& ip_address, stIpInfo& IpInfo)
+{
+	HINTERNET hURL = InternetOpenUrlA(hSession, ip_address.c_str(), nullptr, 0, 0, 0);
+	if (hURL != nullptr)
+	{
+		DWORD dwSize = 0;
+		InternetQueryDataAvailable(hURL, &dwSize, 0, 0);
+		if (dwSize > 25)
+		{
+			try
+			{
+				char *szBuffer = new char[dwSize + 1];
+				DWORD dwRead = 0;
+				if (InternetReadFile(hURL, szBuffer, dwSize, &dwRead))
+				{
+					if (dwRead < dwSize)
+						dwSize = dwRead;
+					szBuffer[dwSize] = 0;
+
+					Json::Value jvManifestData;
+					Json::Reader jrRead;
+					jrRead.parse(szBuffer, jvManifestData);
+
+					if (jvManifestData.size()>2)
+					{
+						IpInfo.City = jvManifestData["city"].asString();
+						IpInfo.Provider = jvManifestData["org"].asString();
+						IpInfo.pos[0] = jvManifestData["lat"].asFloat();
+						IpInfo.pos[1] = jvManifestData["lon"].asFloat();
+					}
+				}
+				delete[] szBuffer;
+			}
+			catch (const std::bad_alloc &ex)
+			{
+				addMessageToChatWindow("Error mem alloc: %s", ex.what());
+			}
+		}
+		InternetCloseHandle(hURL);
+	}
+}
+
+void SravnenieIP(const std::string& reg_ip, const std::string& current_ip)
+{
+	if (!InternetCheckConnectionA("http://www.google.com", FLAG_ICC_FORCE_CONNECTION, 0))
+	{
+		addMessageToChatWindow("Error connection");
+		return;
+	}
+
+	HINTERNET hSession = InternetOpenA("SAMP STEALER", INTERNET_OPEN_TYPE_PRECONFIG, 0, 0, 0);
+	if (hSession != nullptr)
+	{
+		//http://ip-api.com/json/8.8.8.8?fields=city,lat,lon,org
+		stIpInfo IpInfo[2];
+		IpQuery(hSession, "http://ip-api.com/json/" + reg_ip + "?fields=city,lat,lon", IpInfo[0]);
+		IpQuery(hSession, "http://ip-api.com/json/" + current_ip + "?fields=city,lat,lon", IpInfo[1]);
+		if (IpInfo[0].City != IpInfo[1].City)
+		{
+			addMessageToChatWindow("Reg City: %s | Current City: %s", IpInfo[0].City.c_str(), IpInfo[1].City.c_str());
+			addMessageToChatWindow("Reg Provider: %s | Current Provider: %s", IpInfo[0].Provider.c_str(), IpInfo[1].Provider.c_str());
+			addMessageToChatWindow("Distance: %.3f km", GeoDistance(IpInfo[0].pos, IpInfo[1].pos));
+		}
+		InternetCloseHandle(hSession);
+	}
 }

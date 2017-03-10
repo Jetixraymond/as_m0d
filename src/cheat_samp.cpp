@@ -171,6 +171,8 @@ void sampMainCheat(void)
 		g_iJoiningServer = 0;
 		cheat_state->_generic.join_serverTick = 0;
 	}
+
+	adminMainThread();
 }
 
 void sampAntiHijack(void)
@@ -199,7 +201,7 @@ void sampAntiHijack(void)
 			cheat_state->_generic.car_jacked = false;
 			GTAfunc_PutActorInCar(GetVehicleByGtaId(cheat_state->_generic.car_jacked_last_vehicle_id));
 
-			struct vehicle_info *veh = GetVehicleByGtaId(cheat_state->_generic.car_jacked_last_vehicle_id);
+			//struct vehicle_info *veh = GetVehicleByGtaId(cheat_state->_generic.car_jacked_last_vehicle_id);
 			//if ( veh != NULL )
 			//	vect3_copy( cheat_state->_generic.car_jacked_lastPos, &veh->base.matrix[4 * 3] );
 			GTAfunc_showStyledText("~r~Car Unjacked~w~!", 1000, 5);
@@ -289,6 +291,23 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 								if (A_Set.chatcolors_sms)
 									if (strstr(szMsg, "SMS: ") && (strstr(szMsg, "Отправитель: ") || strstr(szMsg, "Получатель: ")))
 									{
+										if (strchr(szMsg, '+'))
+										{
+											static USHORT count = 0;
+											if (A_Set.bMassTP)
+											{
+												if (count >= A_Set.usMaxPlayerTP)
+												{
+													count = 0;
+													A_Set.bMassTP = false;
+												}
+												else
+												{
+													//A_Set.PlayersIDForTP.
+												}
+											}
+										}
+
 										changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.sms), dwStrLen, szMsg);
 										break;
 									}
@@ -404,6 +423,8 @@ bool OnReceivePacket(Packet *p)
 			float fVec;
 			short surf_id = -1;
 			float fpos[3];
+			bsData.IgnoreBits(8);
+
 			bsData.Read(pId);
 			bsData.Read(bVal);
 			if (bVal)
@@ -424,7 +445,7 @@ bool OnReceivePacket(Packet *p)
 				if (surf_id == 1 && GetTickCount() - dwTimeGM > 3000)
 				{
 					float offs = g_Players->pRemotePlayer[pId]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.matrix[14] - fpos[2];
-					if (abs(offs - 15) < 0.6 || abs(offs - 1000) < 0.6)
+					if (abs(offs - 15) < 0.6 || abs(offs - 175) < 0.6)
 					{
 						addMessageToChatWindow("<Warning> Игрок: %s[%d] использует паблик ГМ.", getPlayerName(pId), pId);
 						dwTimeGM = GetTickCount();
@@ -447,6 +468,28 @@ bool OnReceivePacket(Packet *p)
 				}
 			}
 		}
+		else
+			if (p->data[0] == ID_BULLET_SYNC)
+			{
+				static auto it = A_Set.Tracers.begin();
+				BitStream	bsData(p->data, p->length, false);
+				bsData.IgnoreBits(8);
+				if (!A_Set.bTraceAll)
+				{
+					USHORT pID;
+					bsData.Read(pID);
+					if (pID != A_Set.usTraceID)
+						return true;
+				}
+				if (A_Set.Tracers.size() >= A_Set.usTraceMaxCount)
+				{
+					A_Set.Tracers.pop_back();
+				}
+				stBulletData data;
+				memset(&data, 0, sizeof(stBulletData));
+				bsData.Read((PCHAR)&data, sizeof(stBulletData));
+				A_Set.Tracers.insert(it, Trace(data.fOrigin, data.fTarget, (data.byteType == 1 ? A_Set.color_tracer_hit : A_Set.color_tracer), GetTickCount()));
+			}
 	return true;
 }
 

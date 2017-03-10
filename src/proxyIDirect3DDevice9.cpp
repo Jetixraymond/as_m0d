@@ -3637,6 +3637,16 @@ void renderHandler()
 		renderSAMP();	// sure why not
 		renderPlayerTags();
 
+		if (A_Set.traces && !A_Set.Tracers.empty())
+		{
+			static auto iter = A_Set.Tracers.cbegin();
+			if (iter == A_Set.Tracers.cend())//если ебануто отображается сделать цикл for (auto& iter : A_Set.Tracers)
+				iter = A_Set.Tracers.cbegin();
+			render->DrawLine(iter->start, iter->end, iter->color);
+			iter++;
+		}
+
+
 		if ( cheat_state->_generic.teletext )
 			RenderTeleportTexts();
 		if ( cheat_state->debug_enabled )
