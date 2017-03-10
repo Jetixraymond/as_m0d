@@ -1,6 +1,5 @@
 #pragma once
 
-void			adminMainThread(void);
 void			OnCloseDialog(void *pDialog);
 void			D3DColorToStringColor(D3DCOLOR dwColor, char* szOutColor);
 bool			stringToD3DColor(const char* szStrColor, D3DCOLOR* dwOutColor);
