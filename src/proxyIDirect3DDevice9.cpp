@@ -2998,6 +2998,7 @@ void renderSAMP ( void )
 		// init modCommands
 		if ( set.mod_commands_activated )
 			initChatCmds();
+		adminFunctions_cmds();
 
 		memcpy_safe((void *)0x004B35A0, (uint8_t *)"\x83\xEC\x0C\x56\x8B\xF1", 6 ); // godmode patch
 		

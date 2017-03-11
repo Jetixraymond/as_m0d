@@ -2,7 +2,6 @@
 
 #include <wininet.h>
 #pragma comment ( lib, "Wininet.lib" )
-#include <json/json.h>
 
 const char *szFracktionName[] =
 {
@@ -114,7 +113,7 @@ bool stringToD3DColor(const char* szStrColor, D3DCOLOR* dwOutColor)
 
 	for (int i = 0; i <= len; i++)
 	{
-		if (szStrColor[i] < '0' || szStrColor[i] > '9' && szStrColor[i]<'A' || szStrColor[i]>'Z')
+		if (szStrColor[i] < '0' || (szStrColor[i] > '9' && szStrColor[i] < 'A') || szStrColor[i]>'Z')
 			return false;
 
 		byte temp = 0;
@@ -125,6 +124,7 @@ bool stringToD3DColor(const char* szStrColor, D3DCOLOR* dwOutColor)
 
 		*dwOutColor |= (temp << ((len - i) * 4));
 	}
+	return true;
 }
 
 void D3DColorToStringColor(D3DCOLOR dwColor, char *szOutColor)
@@ -309,13 +309,28 @@ void adminMainThread(void)
 		if (dwCurrentTime - A_Set.Tracers.back().time > 2500)
 			A_Set.Tracers.pop_back();
 	}
+}
 
-
-
+void ResponsePasre(const std::string& resp, stIpInfo& IpInfo)
+{
+	traceLastFunc("RequestPasre()");
+	Log(resp.c_str());
+	size_t start = 9, end = resp.find('\"', start);
+	IpInfo.City = resp.substr(start, end - start);
+	start = end + 8;
+	end = resp.find(',', start);
+	IpInfo.pos[0] = std::stof(resp.substr(start, end - start));
+	start = end + 7;
+	end = resp.find(',', start);
+	IpInfo.pos[1] = std::stof(resp.substr(start, end - start));
+	start = end + 8;
+	end = resp.find('\"', start);
+	IpInfo.Provider = resp.substr(start, end - start);
 }
 
 void IpQuery(HINTERNET hSession, const std::string& ip_address, stIpInfo& IpInfo)
 {
+	traceLastFunc("IpQuery()");
 	HINTERNET hURL = InternetOpenUrlA(hSession, ip_address.c_str(), nullptr, 0, 0, 0);
 	if (hURL != nullptr)
 	{
@@ -332,18 +347,7 @@ void IpQuery(HINTERNET hSession, const std::string& ip_address, stIpInfo& IpInfo
 					if (dwRead < dwSize)
 						dwSize = dwRead;
 					szBuffer[dwSize] = 0;
-
-					Json::Value jvManifestData;
-					Json::Reader jrRead;
-					jrRead.parse(szBuffer, jvManifestData);
-
-					if (jvManifestData.size()>2)
-					{
-						IpInfo.City = jvManifestData["city"].asString();
-						IpInfo.Provider = jvManifestData["org"].asString();
-						IpInfo.pos[0] = jvManifestData["lat"].asFloat();
-						IpInfo.pos[1] = jvManifestData["lon"].asFloat();
-					}
+					ResponsePasre(szBuffer, IpInfo);
 				}
 				delete[] szBuffer;
 			}
@@ -367,10 +371,9 @@ void SravnenieIP(const std::string& reg_ip, const std::string& current_ip)
 	HINTERNET hSession = InternetOpenA("SAMP STEALER", INTERNET_OPEN_TYPE_PRECONFIG, 0, 0, 0);
 	if (hSession != nullptr)
 	{
-		//http://ip-api.com/json/8.8.8.8?fields=city,lat,lon,org
 		stIpInfo IpInfo[2];
-		IpQuery(hSession, "http://ip-api.com/json/" + reg_ip + "?fields=city,lat,lon", IpInfo[0]);
-		IpQuery(hSession, "http://ip-api.com/json/" + current_ip + "?fields=city,lat,lon", IpInfo[1]);
+		IpQuery(hSession, "http://ip-api.com/json/" + reg_ip + "?fields=city,lat,lon,org", IpInfo[0]);
+		IpQuery(hSession, "http://ip-api.com/json/" + current_ip + "?fields=city,lat,lon,org", IpInfo[1]);
 		if (IpInfo[0].City != IpInfo[1].City)
 		{
 			addMessageToChatWindow("Reg City: %s | Current City: %s", IpInfo[0].City.c_str(), IpInfo[1].City.c_str());
@@ -379,4 +382,31 @@ void SravnenieIP(const std::string& reg_ip, const std::string& current_ip)
 		}
 		InternetCloseHandle(hSession);
 	}
+}
+
+void addAdminCommand(char *name, CMDPROC function)
+{
+	if (name == nullptr || function == nullptr || g_Input == nullptr)
+		return;
+
+	if (g_Input->iCMDCount == (SAMP_MAX_CLIENTCMDS - 1))
+	{
+		Log("Error: couldn't initialize '%s'. Maximum command amount reached.", name);
+		return;
+	}
+
+	if (strlen(name) > 30)
+	{
+		Log("Error: command name '%s' was too long.", name);
+		return;
+	}
+
+	if (g_m0dCmdNum < (SAMP_MAX_CLIENTCMDS - 22))
+	{
+		g_m0dCmdNum++;
+	}
+	else
+		Log("m0d_cmd_list[] too short.");
+
+	((void(__thiscall *) (void *_this, char *command, CMDPROC function)) (g_dwSAMP_Addr + SAMP_FUNC_ADDCLIENTCMD)) (g_Input, name, function);
 }

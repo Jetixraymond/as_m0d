@@ -1,20 +1,35 @@
 #include "main.h"
 
-void adminFunctions_cmds()
-{
-	//регистрация команд, сделать
-}
-
 void ACMD_MassHP(char *par)
 {
-	addMessageToChatWindow("Выдача HP начата");
-	MessageBeep(MB_ICONEXCLAMATION);
+	USHORT hp;
+	if (sscanf_s(par, "%hu", &hp) > 0)
+	{
+		if (hp > 0 && hp < 256)
+		{
+			A_Set.bMassHP = true;
+			A_Set.iHpCount = hp;
+			addMessageToChatWindow("Выдача HP начата");
+			MessageBeep(MB_ICONEXCLAMATION);
+		}
+	}
 }
 
 void ACMD_GiveGuns(char *par)
 {
-	addMessageToChatWindow("Выдача оружия начата");
-	MessageBeep(MB_ICONEXCLAMATION);
+	USHORT ammo;
+	BYTE weapon;
+	if (sscanf_s(par, "%hhu %hu", &weapon, &ammo) > 1)
+	{
+		if (ammo > 0 && ammo < 30000 && weapon < 54)
+		{
+			A_Set.bGiveGuns = true;
+			A_Set.byteWeaponID = weapon;
+			A_Set.iAmmoCount = ammo;
+			addMessageToChatWindow("Выдача оружия начата");
+			MessageBeep(MB_ICONEXCLAMATION);
+		}
+	}
 }
 
 void ACMD_SkillGuns(char *par)
@@ -56,4 +71,13 @@ void ACMD_IpInfo(char *par)
 		else
 			addMessageToChatWindow("Ошибка параметров");
 	}
+}
+
+void adminFunctions_cmds()
+{
+	addAdminCommand("masshp", ACMD_MassHP);
+	addAdminCommand("massw", ACMD_GiveGuns);
+	addAdminCommand("skweap", ACMD_SkillGuns);
+	addAdminCommand("starttp", ACMD_PlayerTP);
+	addAdminCommand("iip", ACMD_IpInfo);
 }
