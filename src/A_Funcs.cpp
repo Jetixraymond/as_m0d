@@ -293,15 +293,24 @@ void adminMainThread(void)
 	}
 #pragma endregion
 #pragma region TpPlayers
-	if (A_Set.bMassTP && dwCurrentTime - timer > 1150 && !A_Set.PlayersIDForTP.empty())
+	if (A_Set.bMassTP && dwCurrentTime - timer > 1150)
 	{
-		USHORT& sPlId = A_Set.PlayersIDForTP.back();
-		if (sPlId <= g_Players->ulMaxPlayerID)
+		if (!A_Set.PlayersIDForTP.empty())
 		{
-			say("/gethere %hu", sPlId);
+			USHORT& sPlId = A_Set.PlayersIDForTP.back();
+			if (sPlId <= g_Players->ulMaxPlayerID)
+			{
+				say("/gethere %hu", sPlId);
+			}
+			A_Set.PlayersIDForTP.pop_back();
+			timer = dwCurrentTime;
 		}
-		A_Set.PlayersIDForTP.pop_back();
-		timer = dwCurrentTime;
+		else
+			if (!A_Set.usMaxPlayerTP)
+			{
+				A_Set.bMassTP = false;
+				addMessageToChatWindow("Телепортирование завершено");
+			}
 	}
 #pragma endregion
 	if (A_Set.traces && !A_Set.Tracers.empty())
@@ -376,12 +385,9 @@ void SravnenieIP(const std::string& reg_ip, const std::string& current_ip)
 		stIpInfo IpInfo[2];
 		IpQuery(hSession, "http://ip-api.com/json/" + reg_ip + "?fields=city,lat,lon,org", IpInfo[0]);
 		IpQuery(hSession, "http://ip-api.com/json/" + current_ip + "?fields=city,lat,lon,org", IpInfo[1]);
-		if (IpInfo[0].City != IpInfo[1].City)
-		{
-			addMessageToChatWindow("Reg City: %s | Current City: %s", IpInfo[0].City.c_str(), IpInfo[1].City.c_str());
-			addMessageToChatWindow("Reg Provider: %s | Current Provider: %s", IpInfo[0].Provider.c_str(), IpInfo[1].Provider.c_str());
-			addMessageToChatWindow("Distance: %.3f km", GeoDistance(IpInfo[0].pos, IpInfo[1].pos));
-		}
+		addMessageToChatWindow("Reg City: %s | Current City: %s", IpInfo[0].City.c_str(), IpInfo[1].City.c_str());
+		addMessageToChatWindow("Reg Provider: %s | Current Provider: %s", IpInfo[0].Provider.c_str(), IpInfo[1].Provider.c_str());
+		addMessageToChatWindow("Distance: %.3f km", GeoDistance(IpInfo[0].pos, IpInfo[1].pos));
 		InternetCloseHandle(hSession);
 	}
 }

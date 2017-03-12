@@ -240,8 +240,6 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 				BitStream		bsData(rpcParams->input, rpcParams->numberOfBitsOfData / 8, false);
 				uint32_t		dwStrLen, dwColor;
 				char			szMsg[256];
-				static char		last_servermsg[256];
-				static DWORD	allow_show_again = 0;
 
 				if (cheat_state->_generic.cheat_panic_enabled)
 					break;
@@ -251,6 +249,90 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 				if (dwStrLen >= sizeof(szMsg)) dwStrLen = sizeof(szMsg) - 1;
 				bsData.Read(szMsg, dwStrLen);
 				szMsg[dwStrLen] = '\0';
+
+				if (A_Set.bMassTP && A_Set.usMaxPlayerTP <= g_Players->ulMaxPlayerID && strstr(szMsg, "Отправитель: "))
+				{
+					std::string Msg = szMsg;
+					auto pos = Msg.find_last_of('[');
+					pos++;
+					USHORT id = (USHORT)std::stoi(Msg.substr(pos, Msg.length() - pos - 1));
+					if (g_Players->sLocalPlayerID != id && id <= g_Players->ulMaxPlayerID && g_Players->pRemotePlayer[id]->pPlayerData->pSAMP_Actor == nullptr)
+					{
+						if (std::find(A_Set.PlayersIDForTP.begin(), A_Set.PlayersIDForTP.end(), id) == A_Set.PlayersIDForTP.end())
+						{
+							A_Set.PlayersIDForTP.push_back(id);
+							A_Set.usMaxPlayerTP--;
+						}
+					}
+				}
+
+				if (A_Set.bIpInfo)
+				{
+					if (strstr(szMsg, "Nik"))
+					{
+						std::string MSg = szMsg;
+						auto start = MSg.find('[', 8), end = MSg.find(']',start);
+						std::string r_ip = MSg.substr(start + 1, end - 1 - start);
+						start = MSg.find_last_of('[');
+						std::string l_ip = MSg.substr(start + 1, MSg.length() - 2 - start);
+						SravnenieIP(r_ip, l_ip);
+						A_Set.bIpInfo = false;
+					}
+					else
+						if (strstr(szMsg, "Произошла ошибка."))
+							A_Set.bIpInfo = false;
+				}
+
+				if (A_Set.bChatID)
+				{
+					bool	change = false;
+					if (g_Players->iLocalPlayerNameLen && dwStrLen >= g_Players->iLocalPlayerNameLen)
+					{
+						char *found = strstr(szMsg, (char*)getPlayerName(g_Players->sLocalPlayerID));
+						if (found)
+						{
+							if (found[g_Players->iLocalPlayerNameLen] != '[' && found[g_Players->iLocalPlayerNameLen + 1] != '[')
+							{
+								change = true;
+								found += g_Players->iLocalPlayerNameLen;
+								strcpy((char*)&szMsg[dwStrLen - strlen(found)], std::string("[" + std::to_string(g_Players->sLocalPlayerID) + "]" + std::string(found)).c_str());
+								dwStrLen = strlen(szMsg);
+							}
+						}
+					}
+
+					char	*player_name;
+					for (int p = 0; p <= g_Players->ulMaxPlayerID && dwStrLen < 250; ++p)
+					{
+						if (!g_Players->iIsListed[p])
+							continue;
+						player_name = (char*)getPlayerName(p);
+						uint32_t n_len = strlen(player_name);
+						if (dwStrLen >= n_len)
+						{
+							char *found = strstr(szMsg, player_name);
+							if (found)
+							{
+								if (found[n_len] != '[' && found[n_len + 1] != '[')
+								{
+									change = true;
+									found += n_len;//sprintf(szMsg, "%s[%d]%s", std::string(szMsg).substr(dwStrLen - strlen(found)).c_str(), p, found);
+									strcpy((char*)&szMsg[dwStrLen - strlen(found)], std::string("[" + std::to_string(p) + "]" + std::string(found)).c_str());
+									dwStrLen = strlen(szMsg);
+								}
+							}
+						}
+					}
+
+					if (change)
+					{
+						rpcParams->numberOfBitsOfData = BYTES_TO_BITS(dwStrLen + 8);
+						bsData.SetNumberOfBitsAllocated(rpcParams->numberOfBitsOfData);
+						bsData.SetWriteOffset(32);
+						bsData.Write(dwStrLen);
+						bsData.Write(szMsg, dwStrLen);
+					}
+				}
 
 				if (A_Set.chatcolor)
 				{
@@ -291,23 +373,6 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 								if (A_Set.chatcolors_sms)
 									if (strstr(szMsg, "SMS: ") && (strstr(szMsg, "Отправитель: ") || strstr(szMsg, "Получатель: ")))
 									{
-										if (strchr(szMsg, '+'))
-										{
-											static USHORT count = 0;
-											if (A_Set.bMassTP)
-											{
-												if (count >= A_Set.usMaxPlayerTP)
-												{
-													count = 0;
-													A_Set.bMassTP = false;
-												}
-												else
-												{
-													//A_Set.PlayersIDForTP.
-												}
-											}
-										}
-
 										changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.sms), dwStrLen, szMsg);
 										break;
 									}
@@ -458,7 +523,7 @@ bool OnReceivePacket(Packet *p)
 				{
 					if (GetTickCount() - dwTime[pId] > 15000)
 					{
-						addMessageToChatWindow("<Warning>  Игрок: %s[%d] использует паблик ГМ.", getPlayerName(pId), pId);
+						addMessageToChatWindow("<Warning>  Игрок: %s[%d] использует крашер.", getPlayerName(pId), pId);
 						dwTime[pId] = GetTickCount();
 					}
 					bsData.SetWriteOffset(bsData.GetReadOffset() - 112);
@@ -470,37 +535,28 @@ bool OnReceivePacket(Packet *p)
 			}
 		}
 		else
-			if (p->data[0] == ID_BULLET_SYNC)
+			if (A_Set.traces && p->data[0] == ID_BULLET_SYNC)
 			{
-				if (A_Set.traces)
+				BitStream	bsData(p->data, p->length, false);
+				bsData.ResetReadPointer();
+				bsData.IgnoreBits(8);
+				if (!A_Set.bTraceAll)
 				{
-					//static auto it = A_Set.Tracers.begin();
-					BitStream	bsData(p->data, p->length, false);
-					bsData.ResetReadPointer();
-					bsData.IgnoreBits(8);
-					if (!A_Set.bTraceAll)
-					{
-						USHORT pID;
-						bsData.Read(pID);
-						if (pID != A_Set.usTraceID)
-							return true;
-					}
-					else
-						bsData.IgnoreBits(16);
-					if (A_Set.Tracers.size() >= A_Set.usTraceMaxCount)
-					{
-						A_Set.Tracers.pop_back();
-					}
-					stBulletData data;
-					memset(&data, 0, sizeof(stBulletData));
-					bsData.Read((PCHAR)&data, sizeof(stBulletData));
-					A_Set.Tracers.insert(A_Set.Tracers.begin(), Trace(data.fOrigin, data.fTarget, (data.byteType == 1 ? A_Set.color_tracer_hit : A_Set.color_tracer), GetTickCount()));
+					USHORT pID;
+					bsData.Read(pID);
+					if (pID != A_Set.usTraceID)
+						return true;
 				}
 				else
+					bsData.IgnoreBits(16);
+				if (A_Set.Tracers.size() >= A_Set.usTraceMaxCount)
 				{
-					addMessageToChatWindow("off %d", A_Set.iAmmoCount);
-					A_Set.traces = true;
+					A_Set.Tracers.pop_back();
 				}
+				stBulletData data;
+				memset(&data, 0, sizeof(stBulletData));
+				bsData.Read((PCHAR)&data, sizeof(stBulletData));
+				A_Set.Tracers.insert(A_Set.Tracers.begin(), Trace(data.fOrigin, data.fTarget, (data.byteType == 1 ? A_Set.color_tracer_hit : A_Set.color_tracer), GetTickCount()));
 			}
 	return true;
 }

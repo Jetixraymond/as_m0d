@@ -80,6 +80,8 @@ struct AdminSetting
 	bool bSkillGun = false;
 	bool bMassTP = false;
 	bool bTraceAll = true;
+	bool bChatID = true;
+	bool bIpInfo = false;
 };
 
 void initAdminSettings();

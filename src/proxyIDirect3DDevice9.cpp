@@ -1999,20 +1999,20 @@ void renderKillList ( void )
 				{
 					char	buf[32];
 					sprintf( buf, "%d", type );
-					pD3DFontChat->PrintShadow( x - 12.0f, y - 12.0f, 0xFFFFFFFF, buf );
+					pD3DFont->PrintShadow(x - 12.0f, y - 12.0f, 0xFFFFFFFF, buf);
 				}
 
-				h = pD3DFontChat->DrawHeight() / 2.0f;
+				h = pD3DFont->DrawHeight() / 2.0f;
 				if ( strlen(ent->szKiller) == 0 )
 				{
-					w = pD3DFontChat->DrawLength( ent->szVictim );
-					pD3DFontChat->PrintShadow( x - 16.0f - w, y - h, ent->clVictimColor, ent->szVictim );
+					w = pD3DFont->DrawLength(ent->szVictim);
+					pD3DFont->PrintShadow(x - 16.0f - w, y - h, ent->clVictimColor, ent->szVictim);
 				}
 				else
 				{
-					w = pD3DFontChat->DrawLength( ent->szKiller );
-					pD3DFontChat->PrintShadow( x - 16.0f - w, y - h, ent->clKillerColor, ent->szKiller );
-					pD3DFontChat->PrintShadow( x + 16.0f, y - h, ent->clVictimColor, ent->szVictim );
+					w = pD3DFont->DrawLength(ent->szKiller);
+					pD3DFont->PrintShadow(x - 16.0f - w, y - h, ent->clKillerColor, ent->szKiller);
+					pD3DFont->PrintShadow(x + 16.0f, y - h, ent->clVictimColor, ent->szVictim);
 				}
 			}
 

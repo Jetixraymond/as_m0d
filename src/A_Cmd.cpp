@@ -59,6 +59,14 @@ void ACMD_PlayerTP(char *par)
 	}
 }
 
+void ACMD_PlayerTPBreak(char *)
+{
+	A_Set.usMaxPlayerTP = 0;
+	A_Set.bMassTP = false;
+	A_Set.PlayersIDForTP.clear();
+	addMessageToChatWindow("Телепортирование прекращено");
+}
+
 void ACMD_IpInfo(char *par)
 {
 	if (strlen(par) > 0)
@@ -69,7 +77,40 @@ void ACMD_IpInfo(char *par)
 			say("/getip %d", Id);
 		}
 		else
-			addMessageToChatWindow("Ошибка параметров");
+			say("/agetip %s", par);
+		A_Set.bIpInfo = true;
+	}
+}
+
+void ACMD_trace(char *par)
+{
+	if (strlen(par) > 0)
+	{
+		if (!strncmp(par, "all", 3))
+		{
+			A_Set.bTraceAll = true;
+			addMessageToChatWindow("Trace: All");
+		}
+		else
+		{
+			USHORT pID;
+			if (sscanf_s(par, "%hu", &pID) && pID <= g_Players->ulMaxPlayerID)
+			{
+				A_Set.bTraceAll = false;
+				A_Set.usTraceID = pID;
+				addMessageToChatWindow("Trace: %d ID", pID);
+			}
+		}
+		A_Set.traces = true;
+	}
+	else
+	{
+		A_Set.traces ^= true;
+		addMessageToChatWindow("Trace: %s", A_Set.traces ? "on" : "off");
+		if (!A_Set.traces)
+		{
+			A_Set.Tracers.clear();
+		}
 	}
 }
 
@@ -80,4 +121,6 @@ void adminFunctions_cmds()
 	addAdminCommand("skweap", ACMD_SkillGuns);
 	addAdminCommand("starttp", ACMD_PlayerTP);
 	addAdminCommand("iip", ACMD_IpInfo);
+	addAdminCommand("trace", ACMD_trace);
+	addAdminCommand("endtp", ACMD_PlayerTPBreak);
 }
