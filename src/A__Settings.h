@@ -2,12 +2,16 @@
 
 struct Trace
 {
-	float start[3], end[3];
+	D3DXVECTOR3 start, end;
 	DWORD color, time;
 	Trace(float *st, float *en, DWORD col, DWORD tim)
 	{
-		memcpy(start, st, sizeof(float[3]));
-		memcpy(end, en, sizeof(float[3]));
+		start.x = st[0];
+		start.y = st[1];
+		start.z = st[2] - 0.2f;
+		end.x = en[0];
+		end.y = en[1];
+		end.z = en[2];
 		color = col;
 		time = tim;
 	}
@@ -38,8 +42,8 @@ struct AdminSetting
 
 	/*4 bytes*/
 	CheckerPosition ACheckPos, PCheckPos, KillListPos;
-	DWORD color_tracer_hit;
-	DWORD color_tracer;
+	DWORD color_tracer_hit = 0xFFFF0000;
+	DWORD color_tracer = 0xFF0000FF;
 #pragma region ChatColor
 	DWORD sms;
 	DWORD report;
@@ -52,10 +56,9 @@ struct AdminSetting
 
 	/*2 bytes*/
 	unsigned short usSetLeaderID = -1;
-	unsigned short usMaxPlayerID = 0;
 	unsigned short usMaxPlayerTP = 0;
 	unsigned short usTraceID = 0;
-	unsigned short usTraceMaxCount = 1;
+	unsigned short usTraceMaxCount = 20;
 
 	/*1 bytes*/
 	unsigned char byteFrackID = 0;
@@ -71,7 +74,7 @@ struct AdminSetting
 	bool chatcolors_reportr = true;
 	bool chatcolors_support = true;
 #pragma endregion
-	bool traces = false;
+	bool traces = true;
 	bool bMassHP = false;
 	bool bGiveGuns = false;
 	bool bSkillGun = false;
@@ -79,4 +82,5 @@ struct AdminSetting
 	bool bTraceAll = true;
 };
 
+void initAdminSettings();
 extern struct AdminSetting A_Set;

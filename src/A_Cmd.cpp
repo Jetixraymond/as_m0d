@@ -48,7 +48,7 @@ void ACMD_PlayerTP(char *par)
 	if (strlen(par) > 0)
 	{
 		USHORT maxPlayers = 0;
-		if (sscanf_s(par, "%hu", &maxPlayers) && maxPlayers > 0 && maxPlayers <= A_Set.usMaxPlayerID)
+		if (sscanf_s(par, "%hu", &maxPlayers) && maxPlayers > 0 && maxPlayers <= g_Players->ulMaxPlayerID)
 		{
 			addMessageToChatWindow("“елепортирование %d игроков началось.", maxPlayers);
 			A_Set.usMaxPlayerTP = maxPlayers;

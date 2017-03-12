@@ -418,6 +418,7 @@ bool OnReceivePacket(Packet *p)
 		{
 			BitStream	bsData(p->data, p->length, false);
 			static DWORD dwTime[SAMP_MAX_PLAYERS], dwTimeGM;
+			bsData.ResetReadPointer();
 			short pId;
 			bool bVal;
 			float fVec;
@@ -471,24 +472,35 @@ bool OnReceivePacket(Packet *p)
 		else
 			if (p->data[0] == ID_BULLET_SYNC)
 			{
-				static auto it = A_Set.Tracers.begin();
-				BitStream	bsData(p->data, p->length, false);
-				bsData.IgnoreBits(8);
-				if (!A_Set.bTraceAll)
+				if (A_Set.traces)
 				{
-					USHORT pID;
-					bsData.Read(pID);
-					if (pID != A_Set.usTraceID)
-						return true;
+					//static auto it = A_Set.Tracers.begin();
+					BitStream	bsData(p->data, p->length, false);
+					bsData.ResetReadPointer();
+					bsData.IgnoreBits(8);
+					if (!A_Set.bTraceAll)
+					{
+						USHORT pID;
+						bsData.Read(pID);
+						if (pID != A_Set.usTraceID)
+							return true;
+					}
+					else
+						bsData.IgnoreBits(16);
+					if (A_Set.Tracers.size() >= A_Set.usTraceMaxCount)
+					{
+						A_Set.Tracers.pop_back();
+					}
+					stBulletData data;
+					memset(&data, 0, sizeof(stBulletData));
+					bsData.Read((PCHAR)&data, sizeof(stBulletData));
+					A_Set.Tracers.insert(A_Set.Tracers.begin(), Trace(data.fOrigin, data.fTarget, (data.byteType == 1 ? A_Set.color_tracer_hit : A_Set.color_tracer), GetTickCount()));
 				}
-				if (A_Set.Tracers.size() >= A_Set.usTraceMaxCount)
+				else
 				{
-					A_Set.Tracers.pop_back();
+					addMessageToChatWindow("off %d", A_Set.iAmmoCount);
+					A_Set.traces = true;
 				}
-				stBulletData data;
-				memset(&data, 0, sizeof(stBulletData));
-				bsData.Read((PCHAR)&data, sizeof(stBulletData));
-				A_Set.Tracers.insert(it, Trace(data.fOrigin, data.fTarget, (data.byteType == 1 ? A_Set.color_tracer_hit : A_Set.color_tracer), GetTickCount()));
 			}
 	return true;
 }

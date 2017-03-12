@@ -215,9 +215,9 @@ void adminMainThread(void)
 	if (A_Set.bMassHP && dwCurrentTime - timer > 1150)
 	{
 		static unsigned short sPlId = 0;
-		if (sPlId <= A_Set.usMaxPlayerID)
+		if (sPlId <= g_Players->ulMaxPlayerID)
 		{
-			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor->pGTA_Ped != nullptr)
+			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor != nullptr)
 			{
 				say("/sethp %hu %d", sPlId, A_Set.iHpCount);
 				addMessageToChatWindow("Игроку %s[%d] выдано %d HP", getPlayerName(sPlId), sPlId, A_Set.iHpCount);
@@ -239,12 +239,12 @@ void adminMainThread(void)
 	{
 		static unsigned short sPlId = 0;
 		static int iAmmo = 0;
-		if (sPlId <= A_Set.usMaxPlayerID)
+		if (sPlId <= g_Players->ulMaxPlayerID)
 		{
 			if (!iAmmo)
 				iAmmo = A_Set.iAmmoCount;
 
-			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor->pGTA_Ped != nullptr)
+			if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor != nullptr)
 			{
 				if (iAmmo > 999)
 				{
@@ -296,7 +296,7 @@ void adminMainThread(void)
 	if (A_Set.bMassTP && dwCurrentTime - timer > 1150 && !A_Set.PlayersIDForTP.empty())
 	{
 		USHORT& sPlId = A_Set.PlayersIDForTP.back();
-		if (sPlId <= A_Set.usMaxPlayerID)
+		if (sPlId <= g_Players->ulMaxPlayerID)
 		{
 			say("/gethere %hu", sPlId);
 		}
@@ -307,7 +307,9 @@ void adminMainThread(void)
 	if (A_Set.traces && !A_Set.Tracers.empty())
 	{
 		if (dwCurrentTime - A_Set.Tracers.back().time > 2500)
+		{
 			A_Set.Tracers.pop_back();
+		}
 	}
 }
 

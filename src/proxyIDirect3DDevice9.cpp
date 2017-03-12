@@ -3640,11 +3640,10 @@ void renderHandler()
 
 		if (A_Set.traces && !A_Set.Tracers.empty())
 		{
-			static auto iter = A_Set.Tracers.cbegin();
-			if (iter == A_Set.Tracers.cend())//если ебануто отображается сделать цикл for (auto& iter : A_Set.Tracers)
-				iter = A_Set.Tracers.cbegin();
-			render->DrawLine(iter->start, iter->end, iter->color);
-			iter++;
+			for (auto& iter : A_Set.Tracers)
+			{
+				render->DrawLine(iter.start, iter.end, iter.color);
+			}
 		}
 
 
