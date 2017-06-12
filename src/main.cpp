@@ -490,7 +490,7 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 
 	case DLL_PROCESS_DETACH:
 
-		if (hhKeyKook!=nullptr)
+		if (hhKeyKook != nullptr)
 			UnhookWindowsHookEx(hhKeyKook);
 
 		if ( g_hOrigDll != NULL )
@@ -515,6 +515,21 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 			fclose( g_flLogAll );
 			g_flLogAll = NULL;
 		}
+
+        if (A_Set.fLogBan != nullptr) {
+            fclose(A_Set.fLogBan);
+            A_Set.fLogBan = nullptr;
+        }
+
+        if (A_Set.fLogWarn != nullptr) {
+            fclose(A_Set.fLogWarn);
+            A_Set.fLogWarn = nullptr;
+        }
+
+        if (A_Set.fLogKillList != nullptr) {
+            fclose(A_Set.fLogKillList);
+            A_Set.fLogKillList = nullptr;
+        }
 
 		if ( set.chatbox_logging )
 		{

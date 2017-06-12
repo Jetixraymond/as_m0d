@@ -430,6 +430,7 @@ struct checkpoint					*gta_checkpoint_info_get ( int n );
 int									gta_menu_active ( void );
 void								gta_menu_active_set ( int enabled );
 const struct weapon_entry			*gta_weapon_get_by_name ( const char *name );
+const char                          *gta_weapon_name(int id);
 void								gta_weapon_set ( struct actor_info *info, int slot, int id, int ammo, int ammo_clip );
 int									gta_weapon_ammo_set ( struct actor_info *info, int slot, int ammo );
 int									gta_weapon_ammo_clip_set ( struct actor_info *info, int slot, int ammo_clip );

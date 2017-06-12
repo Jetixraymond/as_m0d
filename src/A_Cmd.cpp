@@ -101,17 +101,43 @@ void ACMD_trace(char *par)
 				addMessageToChatWindow("Trace: %d ID", pID);
 			}
 		}
-		A_Set.traces = true;
+        A_Set.bTraces = true;
 	}
 	else
 	{
-		A_Set.traces ^= true;
-		addMessageToChatWindow("Trace: %s", A_Set.traces ? "on" : "off");
-		if (!A_Set.traces)
+        A_Set.bTraces ^= true;
+        addMessageToChatWindow("Trace: %s", A_Set.bTraces ? "on" : "off");
+		if (!A_Set.bTraces)
 		{
 			A_Set.Tracers.clear();
 		}
 	}
+}
+
+void ACMD_changeKeyCombo(char *par)
+{
+    if (par != nullptr) {
+        uint8_t tId;
+        if (sscanf_s(par, "%hhu", &tId) == 1) {
+            if (tId < A_Set.keycombo.size()) {
+                parAdminSetting.keycomboId = tId;
+                if (hhKeyKook == nullptr)
+                {
+                    hhKeyKook = SetWindowsHookExA(WH_KEYBOARD_LL, LLKeyProc, NULL, 0);
+                    if (hhKeyKook == nullptr)
+                        return addMessageToChatWindow("[!!!] Error set hook 0xX", GetLastError());
+                }
+                addMessageToChatWindow("Вы устанавливаете новые клавиши для \"%s\". Для завершения установки бинда нажмите ESC или ENTER.", A_Set.keycombo[tId].first.c_str());
+                addMessageToChatWindow("Текущий бинд: \"%s\"", keycombo2String(A_Set.keycombo[tId].second).c_str());
+            }
+            else {
+                addMessageToChatWindow("Выход за пределы!");
+            }
+        }
+        else {
+            addMessageToChatWindow("/changekey [index]");
+        }
+    }
 }
 
 void adminFunctions_cmds()
@@ -123,4 +149,5 @@ void adminFunctions_cmds()
 	addAdminCommand("iip", ACMD_IpInfo);
 	addAdminCommand("trace", ACMD_trace);
 	addAdminCommand("endtp", ACMD_PlayerTPBreak);
+    addAdminCommand("changekey", ACMD_changeKeyCombo);
 }

@@ -214,6 +214,7 @@
 #include "proxyIDirect3D9.h"
 #include "proxyIDirect3DDevice9.h"
 
+#include "A_INI.h"
 #include "A__Settings.h"
 #include "A_Funcs.h"
 #include "A_Cmd.h"

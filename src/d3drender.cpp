@@ -423,6 +423,7 @@ HRESULT CD3DFont::Invalidate ()
 	//SAFE_RELEASE(m_pD3DstateDraw);
 	//SAFE_RELEASE(m_pD3DstateNorm);
 	m_pRender->Invalidate();
+	//delete m_pRender;
 
 	//CD3DBaseRender::Invalidate();
 	return S_OK;
@@ -616,7 +617,7 @@ size_t CD3DFont::GetCharPos( const char *text, float x, bool noColorFormat ) con
 	return pos;
 }
 
-CD3DRender::CD3DRender ( int numVertices )
+CD3DRender::CD3DRender ( int numVertices ) //-V730
 {
 	m_canRender = false;
 

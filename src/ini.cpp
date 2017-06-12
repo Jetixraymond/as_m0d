@@ -174,12 +174,14 @@ static int parse_int ( const char *str )
 	return strtol( str, NULL, 0 );
 }
 
-static int key_lookup ( const char *name )
+int key_lookup ( const char *name )
 {
 	if ( name[0] && !name[1] )
 	{
+        if (name[0] >= 'A' && name[0] <= 'Z')
+            return name[0];
 		if ( name[0] >= 'a' && name[0] <= 'z' )
-			return 'A' + ( name[0] - 'a' );
+			return name[0] - 0x20;
 		if ( name[0] >= '0' && name[0] <= '9' )
 			return name[0];
 	}
@@ -200,22 +202,19 @@ static int key_lookup ( const char *name )
 	return -1;
 }
 
-char* key_name(int key)
+const char* key_name(const uint16_t &key)
 {
-	if (key >= 0)
-	{
-		if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z'))
-			return (char*)&key;
-		
-		short size = sizeof(key_alias) / sizeof(struct key_alias);
+    if ((key >= '0' && key <= '9') || (key >= 'A' && key <= 'Z'))
+        return (char*)&key;
 
-		for (short i = 0; i < size; i++)
-		{
-			if (key_alias[i].key == key)
-				return key_alias[i].name;
-		}
-	}
-	return "unknown";
+    short size = sizeof(key_alias) / sizeof(struct key_alias);
+
+    for (short i = 0; i < size; ++i)
+    {
+        if (key_alias[i].key == key)
+            return key_alias[i].name;
+    }
+    return nullptr;
 }
 
 static struct ini_entry_data *ini_register_data ( struct ini_entry *ent, void *data, const char *def )
@@ -702,41 +701,7 @@ static void ini_init ( void )
 		ini_register_data( ent, &set.key_menu_mousecontrol, "lshift" );
 
 	/*admin settings*/
-	if ((ent = ini_register_entry("hud_indicator_chatcolors", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.hud_indicator_chatcolors, "true");
 
-	if ((ent = ini_register_entry("auto_chatcolors", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolor, "true");
-
-	if ((ent = ini_register_entry("chatcolors_sms", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolors_sms, "true");
-
-	if ((ent = ini_register_entry("chatcolors_report", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolors_report, "false");
-
-	if ((ent = ini_register_entry("chatcolors_feedback", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolors_feedback, "false");
-
-	if ((ent = ini_register_entry("chatcolors_reportr", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolors_reportr, "true");
-
-	if ((ent = ini_register_entry("chatcolors_support", TYPE_BOOL)) != NULL)
-		ini_register_data(ent, &A_Set.chatcolors_support, "true");
-
-	if ((ent = ini_register_entry("color_sms", TYPE_RGB_COLOR)) != NULL)
-		ini_register_data(ent, &A_Set.sms, "FFFFFF");
-
-	if ((ent = ini_register_entry("color_report", TYPE_RGB_COLOR)) != NULL)
-		ini_register_data(ent, &A_Set.report, "FFFFFF");
-
-	if ((ent = ini_register_entry("color_reportr", TYPE_RGB_COLOR)) != NULL)
-		ini_register_data(ent, &A_Set.reportr, "FFFFFF");
-
-	if ((ent = ini_register_entry("color_support", TYPE_RGB_COLOR)) != NULL)
-		ini_register_data(ent, &A_Set.support, "FFFFFF");
-
-	if ((ent = ini_register_entry("color_feedback", TYPE_RGB_COLOR)) != NULL)
-		ini_register_data(ent, &A_Set.feedback, "FFFFFF");
 	/*end admin settings*/
 
 	// custom GUI settings

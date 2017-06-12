@@ -1,5 +1,10 @@
 #pragma once
 
+enum KEYCOMBO : uint16_t
+{
+    TRACE
+};
+
 struct Trace
 {
 	D3DXVECTOR3 start, end;
@@ -17,39 +22,43 @@ struct Trace
 	}
 };
 
-struct CheckerPosition
-{
-	long x, y;
-};
-
 struct stIpInfo
 {
 	std::string City, Provider;
 	float pos[2];
 };
 
-struct PlayerChecker
-{
-	std::string nick, reason;
-};
-
 struct AdminSetting
 {
-	std::vector<USHORT> PlayersIDForTP;
+    using stPlayerChecker = std::pair<std::string, std::string>;
+    using keyBind = std::pair<std::string, keycombo>;
+
+	std::vector<uint16_t> PlayersIDForTP;
+    std::vector<uint16_t> AdminsOnline;
+    std::vector<uint16_t> PlayersOnline;
 	std::vector<Trace> Tracers;
 	std::vector<std::string> AdminChecker;
-	std::vector<PlayerChecker> PlayerChecker;
+    std::vector<stPlayerChecker> PlayerChecker;
+    std::vector<keyBind> keycombo;
+
+    std::string aCheckerMsg, pCheckerMsg;
+    std::string connectLog, disconnectLog;
+
+    uint64_t connectTime, disconnectTime;
+    POINT aCheckPos, pCheckPos, killListPos, connectionPos;
+
+    FILE *fLogBan, *fLogWarn, *fLogKillList;
 
 	/*4 bytes*/
-	CheckerPosition ACheckPos, PCheckPos, KillListPos;
-	DWORD color_tracer_hit = 0xFFFF0000;
-	DWORD color_tracer = 0xFF0000FF;
+    DWORD dwTraceTimer;
+	DWORD dwColorTracerHit;
+	DWORD dwColorTracer;
 #pragma region ChatColor
-	DWORD sms;
-	DWORD report;
-	DWORD reportr;
-	DWORD support;
-	DWORD feedback;
+	DWORD dwColorSms;
+    DWORD dwColorReport;
+    DWORD dwColorReportr;
+    DWORD dwColorSupport;
+    DWORD dwColorFeedback;
 #pragma endregion
 	int iHpCount = 100;
 	int iAmmoCount = 100;
@@ -66,23 +75,39 @@ struct AdminSetting
 	unsigned char byteSkillWeaponID = 0;
 
 #pragma region ChatColorControl
-	bool chatcolor = true;
-	bool hud_indicator_chatcolors = true;
-	bool chatcolors_sms = true;
-	bool chatcolors_report = true;
-	bool chatcolors_feedback = true;
-	bool chatcolors_reportr = true;
-	bool chatcolors_support = true;
+	bool bChatcolor;
+	bool bHudIndicatorChatcolors;
+	bool bChatcolorsSms;
+	bool bChatcolorsReport;
+	bool bChatcolorsFeedback;
+	bool bChatcolorsReportr;
+	bool bChatcolorsSupport;
 #pragma endregion
-	bool traces = true;
-	bool bMassHP = false;
-	bool bGiveGuns = false;
-	bool bSkillGun = false;
-	bool bMassTP = false;
-	bool bTraceAll = true;
-	bool bChatID = true;
-	bool bIpInfo = false;
+	bool bTraces;
+	bool bMassHP;
+	bool bGiveGuns;
+	bool bSkillGun;
+	bool bMassTP;
+	bool bTraceAll;
+	bool bChatID;
+	bool bIpInfo;
+    bool bConnectLog;
+    bool bDisconnectLog;
+    bool bHudIndicatorTrace;
+    bool bLogBan;
+    bool bLogWarn;
+    bool bLogKillList;
+};
+
+struct stSettingParams
+{
+    using keycomboSet = std::pair<uint8_t, std::string>;
+    std::vector<keycomboSet> keycombo;
+    uint8_t keycomboId;
 };
 
 void initAdminSettings();
+void endKeyHook();
 extern struct AdminSetting A_Set;
+extern IniFile A_Ini;
+extern stSettingParams parAdminSetting;

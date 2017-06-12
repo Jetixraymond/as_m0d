@@ -409,4 +409,4 @@ void					ini_load ( void );
 void					ini_reload ( void );
 void					ini_free ( void );
 void					ini_load_setSettings( void );
-char*					key_name(int key);
+const char*             key_name(const uint16_t &key);

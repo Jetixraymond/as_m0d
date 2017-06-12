@@ -90,6 +90,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="A_Cmd.h" />
+    <ClInclude Include="A_INI.h" />
     <ClInclude Include="A__Settings.h" />
     <ClInclude Include="BitStream.h" />
     <ClInclude Include="cheat_samp.h" />
@@ -375,6 +376,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="A_Cmd.cpp" />
+    <ClCompile Include="A_INI.cpp" />
     <ClCompile Include="A__Setting.cpp" />
     <ClCompile Include="BitStream.cpp" />
     <ClCompile Include="cheat_samp.cpp" />

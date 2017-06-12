@@ -236,7 +236,8 @@ void LoadSpriteTexture ( void )
 	return;
 
 out: ;
-	SAFE_RELEASE( pSpriteTexture ) if ( fd != NULL )
+    SAFE_RELEASE(pSpriteTexture);
+    if (fd != NULL)
 		fclose( fd );
 	return;
 }
@@ -1957,8 +1958,8 @@ void renderKillList ( void )
 
 	if ( kill_render && !gta_menu_active() )
 	{
-		float	x = (float)pPresentParam.BackBufferWidth - 180.0f;
-		float	y = 220.0f;
+        float	x = A_Set.killListPos.x;//(float)pPresentParam.BackBufferWidth - 180.0f;
+        float	y = A_Set.killListPos.y;//220.0f;
 		float	w, h;
 		int		i;
 
@@ -2940,6 +2941,44 @@ void renderPlayerInfo ( int iPlayerID )
 
 extern int	iDebuggingPlayer, iViewingInfoPlayer;
 
+inline void renderCheckers()
+{
+    traceLastFunc("renderCheckers()");
+
+    static const uint32_t maxTime = 20000;//ms^(-1)
+    static const uint32_t thresholdTime = maxTime / 2;
+    static const uint32_t coefficientTime = thresholdTime / 250;
+
+    if ((GetAsyncKeyState(VK_TAB) < 0 && set.d3dtext_score)
+        || g_Scoreboard->iIsEnabled) return;
+
+    if (GetAsyncKeyState(VK_F10) < 0)
+        return;
+
+    if (cheat_state->_generic.cheat_panic_enabled)
+        return;
+
+    if (!gta_menu_active())
+    {
+        pD3DFont->PrintShadow(A_Set.aCheckPos.x, A_Set.aCheckPos.y, 0xFFFFFFFF, "Админы в сети:");
+        pD3DFont->PrintShadow(A_Set.aCheckPos.x, A_Set.aCheckPos.y, 0xFFFFFFFF, A_Set.aCheckerMsg.c_str());
+        pD3DFont->PrintShadow(A_Set.pCheckPos.x, A_Set.pCheckPos.y, 0xFFFFFFFF, "Игроки в сети:");
+        pD3DFont->PrintShadow(A_Set.pCheckPos.x, A_Set.pCheckPos.y, 0xFFFFFFFF, A_Set.pCheckerMsg.c_str());
+
+        if (time_get() - A_Set.connectTime <= maxTime)
+            if (time_get() - A_Set.connectTime > thresholdTime)
+                pD3DFont->PrintShadow(A_Set.connectionPos.x, A_Set.connectionPos.y, 0x0000FF00 | (((maxTime - (time_get() - A_Set.connectTime)) / coefficientTime) << 24), A_Set.connectLog.c_str());
+                else
+                    pD3DFont->PrintShadow(A_Set.connectionPos.x, A_Set.connectionPos.y, 0xFF00FF00, A_Set.connectLog.c_str());
+        if (time_get() - A_Set.disconnectTime <= maxTime)
+            if (time_get() - A_Set.disconnectTime > thresholdTime)
+                pD3DFont->PrintShadow(A_Set.connectionPos.x, A_Set.connectionPos.y + pD3DFont->DrawHeight() + 1, 0x00FF0000 | (((maxTime - (time_get() - A_Set.disconnectTime)) / coefficientTime) << 24), A_Set.disconnectLog.c_str());
+                else
+                    pD3DFont->PrintShadow(A_Set.connectionPos.x, A_Set.connectionPos.y + pD3DFont->DrawHeight() + 1, 0xFFFF0000, A_Set.disconnectLog.c_str());
+        
+    }
+}
+
 void renderSAMP ( void )
 {
 	traceLastFunc( "renderSAMP()" );
@@ -2995,6 +3034,7 @@ void renderSAMP ( void )
 		g_RakClient = new RakClient( g_SAMP->pRakClientInterface );
 		g_SAMP->pRakClientInterface = new HookedRakClientInterface();
 		
+        initAdminSettings();
 		// init modCommands
 		if ( set.mod_commands_activated )
 			initChatCmds();
@@ -3035,6 +3075,7 @@ void renderSAMP ( void )
 		renderScoreList();
 		renderTextLabels();
 		clickWarp();
+        renderCheckers();
 
 		if ( iViewingInfoPlayer != -1 )
 		{
@@ -3568,57 +3609,61 @@ void renderHandler()
 				}
 			}
 
-			if ( cheat_state->state == CHEAT_STATE_VEHICLE )
-			{
-				if ( set.hud_indicator_inveh_airbrk )
-				{
-					HUD_TEXT_TGL( x, cheat_state->vehicle.air_brake ? color_enabled : color_disabled, "AirBrk" );
-				}
+            if (!gta_menu_active()) {
+
+                if (cheat_state->state == CHEAT_STATE_VEHICLE)
+                {
+                    if (set.hud_indicator_inveh_airbrk)
+                    {
+                        HUD_TEXT_TGL(x, cheat_state->vehicle.air_brake ? color_enabled : color_disabled, "AirBrk");
+                    }
 
 
-				if ( set.hud_indicator_inveh_fly )
-				{
-					HUD_TEXT_TGL( x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly" );
-				}
+                    if (set.hud_indicator_inveh_fly)
+                    {
+                        HUD_TEXT_TGL(x, cheat_state->vehicle.fly ? color_enabled : color_disabled, "Fly");
+                    }
+                }
+                else if (cheat_state->state == CHEAT_STATE_ACTOR)
+                {
+                    if (set.hud_indicator_onfoot_airbrk)
+                    {
+                        HUD_TEXT_TGL(x, cheat_state->actor.air_brake ? color_enabled : color_disabled, "AirBrk");
+                    }
 
-				if (A_Set.hud_indicator_chatcolors && !gta_menu_active())
-				{
-					HUD_TEXT_TGL(x, A_Set.chatcolor ? color_enabled : color_disabled, "ChatColors");
-				}
-			}
-			else if ( cheat_state->state == CHEAT_STATE_ACTOR )
-			{
-				if ( set.hud_indicator_onfoot_airbrk )
-				{
-					HUD_TEXT_TGL( x, cheat_state->actor.air_brake ? color_enabled : color_disabled, "AirBrk" );
-				}
 
-				
-				if ( set.hud_indicator_onfoot_fly )
-				{
-					HUD_TEXT_TGL( x, cheat_state->actor.fly_on ? color_enabled : color_disabled, "Fly" );
-				}
+                    if (set.hud_indicator_onfoot_fly)
+                    {
+                        HUD_TEXT_TGL(x, cheat_state->actor.fly_on ? color_enabled : color_disabled, "Fly");
+                    }
+                } // end CHEAT_STATE_ACTOR
 
-				if (A_Set.hud_indicator_chatcolors && !gta_menu_active())
-				{
-					HUD_TEXT_TGL(x, A_Set.chatcolor ? color_enabled : color_disabled, "ChatColors");
-				}
-			} // end CHEAT_STATE_ACTOR
+                if (cheat_state->state != CHEAT_STATE_NONE)
+                {
+                    if (A_Set.bHudIndicatorChatcolors)
+                    {
+                        HUD_TEXT_TGL(x, A_Set.bChatcolor ? color_enabled : color_disabled, "ChatColors");
+                    }
 
-			if ( cheat_state->state != CHEAT_STATE_NONE )
-			{
-				if (set.hud_indicator_pos)
-				{
-					float	*coord =
-						( cheat_state->state == CHEAT_STATE_VEHICLE )
-							? cheat_state->vehicle.coords : cheat_state->actor.coords;
+                    if (A_Set.bHudIndicatorTrace)
+                    {
+                        HUD_TEXT_TGL(x, A_Set.bTraces ? color_enabled : color_disabled, "BulletTrace");
+                    }
 
-					_snprintf_s( buf, sizeof(buf)-1, "Coords: {FFFFFF}%0.2f %0.2f %0.2f  %d", coord[0], coord[1], coord[2],
-								 gta_interior_id_get() );
-					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 60,
-										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf );
-				}
-			}
+                    if (set.hud_indicator_pos)
+                    {
+                        float	*coord =
+                            (cheat_state->state == CHEAT_STATE_VEHICLE)
+                            ? cheat_state->vehicle.coords : cheat_state->actor.coords;
+
+                        _snprintf_s(buf, sizeof(buf) - 1, "Coords: {FFFFFF}%0.2f %0.2f %0.2f  %d", coord[0], coord[1], coord[2],
+                            gta_interior_id_get());
+                        pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 60,
+                            pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf);
+                    }
+                }
+
+            }
 
 			if ( cheat_state->text_time > 0 && time_get() - cheat_state->text_time < MSEC_TO_TIME(3000) )
 			{
@@ -3638,7 +3683,7 @@ void renderHandler()
 		renderSAMP();	// sure why not
 		renderPlayerTags();
 
-		if (A_Set.traces && !A_Set.Tracers.empty())
+		if (A_Set.bTraces && !A_Set.Tracers.empty())
 		{
 			for (auto& iter : A_Set.Tracers)
 			{
