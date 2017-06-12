@@ -1,4 +1,4 @@
-#include "main.h"
+п»ї#include "main.h"
 
 void ACMD_MassHP(char *par)
 {
@@ -9,7 +9,7 @@ void ACMD_MassHP(char *par)
 		{
 			A_Set.bMassHP = true;
 			A_Set.iHpCount = hp;
-			addMessageToChatWindow("Выдача HP начата");
+			addMessageToChatWindow("Р’С‹РґР°С‡Р° HP РЅР°С‡Р°С‚Р°");
 			MessageBeep(MB_ICONEXCLAMATION);
 		}
 	}
@@ -26,7 +26,7 @@ void ACMD_GiveGuns(char *par)
 			A_Set.bGiveGuns = true;
 			A_Set.byteWeaponID = weapon;
 			A_Set.iAmmoCount = ammo;
-			addMessageToChatWindow("Выдача оружия начата");
+			addMessageToChatWindow("Р’С‹РґР°С‡Р° РѕСЂСѓР¶РёСЏ РЅР°С‡Р°С‚Р°");
 			MessageBeep(MB_ICONEXCLAMATION);
 		}
 	}
@@ -34,7 +34,7 @@ void ACMD_GiveGuns(char *par)
 
 void ACMD_SkillGuns(char *par)
 {
-	addMessageToChatWindow("Выдача оружия на скиллы начата");
+	addMessageToChatWindow("Р’С‹РґР°С‡Р° РѕСЂСѓР¶РёСЏ РЅР° СЃРєРёР»Р»С‹ РЅР°С‡Р°С‚Р°");
 	A_Set.iAmmoCount = 5500; 
 	A_Set.byteWeaponID = 31; 
 	A_Set.bGiveGuns = true;
@@ -50,12 +50,12 @@ void ACMD_PlayerTP(char *par)
 		USHORT maxPlayers = 0;
 		if (sscanf_s(par, "%hu", &maxPlayers) && maxPlayers > 0 && maxPlayers <= g_Players->ulMaxPlayerID)
 		{
-			addMessageToChatWindow("Телепортирование %d игроков началось.", maxPlayers);
+			addMessageToChatWindow("РўРµР»РµРїРѕСЂС‚РёСЂРѕРІР°РЅРёРµ %d РёРіСЂРѕРєРѕРІ РЅР°С‡Р°Р»РѕСЃСЊ.", maxPlayers);
 			A_Set.usMaxPlayerTP = maxPlayers;
 			A_Set.bMassTP = true;
 		}
 		else
-			addMessageToChatWindow("Ошибка параметров");
+			addMessageToChatWindow("РћС€РёР±РєР° РїР°СЂР°РјРµС‚СЂРѕРІ");
 	}
 }
 
@@ -64,7 +64,7 @@ void ACMD_PlayerTPBreak(char *)
 	A_Set.usMaxPlayerTP = 0;
 	A_Set.bMassTP = false;
 	A_Set.PlayersIDForTP.clear();
-	addMessageToChatWindow("Телепортирование прекращено");
+	addMessageToChatWindow("РўРµР»РµРїРѕСЂС‚РёСЂРѕРІР°РЅРёРµ РїСЂРµРєСЂР°С‰РµРЅРѕ");
 }
 
 void ACMD_IpInfo(char *par)
@@ -127,11 +127,11 @@ void ACMD_changeKeyCombo(char *par)
                     if (hhKeyKook == nullptr)
                         return addMessageToChatWindow("[!!!] Error set hook 0xX", GetLastError());
                 }
-                addMessageToChatWindow("Вы устанавливаете новые клавиши для \"%s\". Для завершения установки бинда нажмите ESC или ENTER.", A_Set.keycombo[tId].first.c_str());
-                addMessageToChatWindow("Текущий бинд: \"%s\"", keycombo2String(A_Set.keycombo[tId].second).c_str());
+                addMessageToChatWindow("Р’С‹ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚Рµ РЅРѕРІС‹Рµ РєР»Р°РІРёС€Рё РґР»СЏ \"%s\". Р”Р»СЏ Р·Р°РІРµСЂС€РµРЅРёСЏ СѓСЃС‚Р°РЅРѕРІРєРё Р±РёРЅРґР° РЅР°Р¶РјРёС‚Рµ ESC РёР»Рё ENTER.", A_Set.keycombo[tId].first.c_str());
+                addMessageToChatWindow("РўРµРєСѓС‰РёР№ Р±РёРЅРґ: \"%s\"", keycombo2String(A_Set.keycombo[tId].second).c_str());
             }
             else {
-                addMessageToChatWindow("Выход за пределы!");
+                addMessageToChatWindow("Р’С‹С…РѕРґ Р·Р° РїСЂРµРґРµР»С‹!");
             }
         }
         else {

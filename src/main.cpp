@@ -1,4 +1,4 @@
-/*
+п»ї/*
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
@@ -478,7 +478,7 @@ BOOL APIENTRY DllMain ( HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpRese
 
 		//Hooks
 		//lOldWndProc = SetWindowLongA(*(HWND*)0xC97C1C, GWL_WNDPROC, LONG(WndProc));
-		/*hhKeyKook = SetWindowsHookExA(WH_KEYBOARD_LL, LLKeyProc, NULL, 0);//перенес в подгрузку samp.dll
+		/*hhKeyKook = SetWindowsHookExA(WH_KEYBOARD_LL, LLKeyProc, NULL, 0);//РїРµСЂРµРЅРµСЃ РІ РїРѕРґРіСЂСѓР·РєСѓ samp.dll
 		if (hhKeyKook == nullptr)
 			MessageBoxA(0, std::string("Error "+std::to_string(GetLastError())).c_str(), "!!!!!!!!!", MB_OKCANCEL);*/
 

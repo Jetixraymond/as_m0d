@@ -1,4 +1,4 @@
-/*
+п»ї/*
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
@@ -2646,7 +2646,7 @@ static void saveColor(const char *section, const char *key, DWORD color)
 {
     char szColor[8];
     sprintf_s(szColor, sizeof(szColor), "%06X", color & 0x00FFFFFF);
-    A_Ini.SetString(section, key, szColor) ? addMessageToChatWindow("Сolor save!") : addMessageToChatWindow("Сolor dont save!");
+    A_Ini.SetString(section, key, szColor) ? addMessageToChatWindow("РЎolor save!") : addMessageToChatWindow("РЎolor dont save!");
 }
 
 static int menu_callback_adminsetting(int op, struct menu_item *item)
@@ -3237,15 +3237,15 @@ void menu_maybe_init ( void )
 	menu_item_add(menu_main, NULL, "\tAdmin Samp-RP", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
 	menu_item_add(menu_main, menu_admintool, "Admin Tools", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 
-    menu_item_add(menu_admintool, menu_chat_colors, "Функции чата", ID_MENU_ADMINS, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_admintool, menu_chat_colors, "Р¤СѓРЅРєС†РёРё С‡Р°С‚Р°", ID_MENU_ADMINS, MENU_COLOR_DEFAULT, NULL);
     menu_item_add(menu_admintool, NULL, "Bullet trace", ID_TRACE, MENU_COLOR_DEFAULT, NULL);
     menu_item_add(menu_admintool, NULL, "Connect Log", ID_CONNECT_LOG, MENU_COLOR_DEFAULT, NULL);
     menu_item_add(menu_admintool, NULL, "Disconnect Log", ID_DISCONNECT_LOG, MENU_COLOR_DEFAULT, NULL);
-    menu_item_add(menu_admintool, menu_admin_setting, "Настройки", ID_ADMIN_SETTINGS, MENU_COLOR_DEFAULT, NULL);
-    menu_item_add(menu_chat_colors, NULL, "Измененние цвета чата", ID_CHATCOLOURS, MENU_COLOR_DEFAULT, NULL);
-    menu_item_add(menu_chat_colors, NULL, "ID в чат", ID_CHATID, MENU_COLOR_DEFAULT, NULL);
-    menu_item_add(menu_chat_colors, NULL, "Логи банов", ID_CHATLOGBAN, MENU_COLOR_DEFAULT, NULL);
-    menu_item_add(menu_chat_colors, NULL, "Логи варнов", ID_CHATLOGWARN, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_admintool, menu_admin_setting, "РќР°СЃС‚СЂРѕР№РєРё", ID_ADMIN_SETTINGS, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_chat_colors, NULL, "РР·РјРµРЅРµРЅРЅРёРµ С†РІРµС‚Р° С‡Р°С‚Р°", ID_CHATCOLOURS, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_chat_colors, NULL, "ID РІ С‡Р°С‚", ID_CHATID, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_chat_colors, NULL, "Р›РѕРіРё Р±Р°РЅРѕРІ", ID_CHATLOGBAN, MENU_COLOR_DEFAULT, NULL);
+    menu_item_add(menu_chat_colors, NULL, "Р›РѕРіРё РІР°СЂРЅРѕРІ", ID_CHATLOGWARN, MENU_COLOR_DEFAULT, NULL);
     menu_item_add(menu_admin_setting, NULL, "\tColor chat setting", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
 
 	menu_item_add(menu_admin_setting, menu_color_sms_setting, "SMS", ID_NONE, MENU_COLOR_DEFAULT, NULL);

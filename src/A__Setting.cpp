@@ -1,4 +1,4 @@
-#include "main.h"
+п»ї#include "main.h"
 #include <fstream>
 
 struct AdminSetting A_Set;
@@ -34,8 +34,8 @@ void initAdminSettings()
     A_Set.bIpInfo = false;
     A_Set.bConnectLog = true;
     A_Set.bDisconnectLog = true;
-    A_Set.aCheckerMsg = "\nНет админов в сети";
-    A_Set.pCheckerMsg = "\nНет игроков в сети";
+    A_Set.aCheckerMsg = "\nРќРµС‚ Р°РґРјРёРЅРѕРІ РІ СЃРµС‚Рё";
+    A_Set.pCheckerMsg = "\nРќРµС‚ РёРіСЂРѕРєРѕРІ РІ СЃРµС‚Рё";
 
     A_Set.bLogBan = A_Set.bLogWarn = A_Set.bLogKillList = A_Set.bConnectLog = A_Set.bDisconnectLog = true;
 
@@ -132,7 +132,7 @@ void iniSetting()
     {
         A_Ini.SetInt("Position", "AdminChecker_X", (A_Set.aCheckPos.x = 10));
         A_Ini.SetInt("Position", "AdminChecker_Y", (A_Set.aCheckPos.y = 20 * (g_Chat->pagesize + 3)));
-        A_Ini.SetInt("Position", "PlayerChecker_X", (A_Set.pCheckPos.x = pPresentParam.BackBufferWidth - pD3DFont->DrawLength("Нет игроков в сети")));
+        A_Ini.SetInt("Position", "PlayerChecker_X", (A_Set.pCheckPos.x = pPresentParam.BackBufferWidth - pD3DFont->DrawLength("РќРµС‚ РёРіСЂРѕРєРѕРІ РІ СЃРµС‚Рё")));
         A_Ini.SetInt("Position", "PlayerChecker_Y", (A_Set.pCheckPos.y = pPresentParam.BackBufferHeight - int(pD3DFont->DrawHeight()) * 6));
         A_Ini.SetInt("Position", "KillList_X", (A_Set.killListPos.x = pPresentParam.BackBufferWidth - 180));
         A_Ini.SetInt("Position", "KillList_Y", (A_Set.killListPos.y = 220));
@@ -179,7 +179,7 @@ void endKeyHook()
     if (UnhookWindowsHookEx(hhKeyKook))
         hhKeyKook = nullptr;
     if (!parAdminSetting.keycombo.empty()) {
-        //сделать диалог подтверждения?
+        //СЃРґРµР»Р°С‚СЊ РґРёР°Р»РѕРі РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ?
         keycombo &key = A_Set.keycombo[parAdminSetting.keycomboId].second;
         key.count = 0;
         std::string keys;
@@ -191,7 +191,7 @@ void endKeyHook()
         parAdminSetting.keycombo.clear();
         parAdminSetting.keycombo.shrink_to_fit();
         if (A_Ini.SetString("Keys", A_Set.keycombo[parAdminSetting.keycomboId].first.c_str(), keys.c_str()))
-            addMessageToChatWindow("Вы устанавили новые клавиши для \"%s\" : \"%s\".", A_Set.keycombo[parAdminSetting.keycomboId].first.c_str(), keys.c_str());
+            addMessageToChatWindow("Р’С‹ СѓСЃС‚Р°РЅР°РІРёР»Рё РЅРѕРІС‹Рµ РєР»Р°РІРёС€Рё РґР»СЏ \"%s\" : \"%s\".", A_Set.keycombo[parAdminSetting.keycomboId].first.c_str(), keys.c_str());
         else
             addMessageToChatWindow("FAIL!!!!");
     }
@@ -226,7 +226,7 @@ void getPlayerList()
             //    A_Set.AdminChecker.emplace_back(match[1].str(), match[2].str());
             //}
             //else {
-            //    addMessageToChatWindow("Строка не соответствует: \"%s\"", player.c_str());
+            //    addMessageToChatWindow("РЎС‚СЂРѕРєР° РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚: \"%s\"", player.c_str());
             //}
             A_Set.PlayerChecker.emplace_back(player.substr(6, player.find_first_of(']') - 6), player.substr(player.find_first_of(']') + 10, player.find_last_of(']') - (player.find_first_of(']') + 10)));
             player.clear();

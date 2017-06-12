@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
@@ -2960,9 +2960,9 @@ inline void renderCheckers()
 
     if (!gta_menu_active())
     {
-        pD3DFont->PrintShadow(A_Set.aCheckPos.x, A_Set.aCheckPos.y, 0xFFFFFFFF, "Àäìèíû â ñåòè:");
+        pD3DFont->PrintShadow(A_Set.aCheckPos.x, A_Set.aCheckPos.y, 0xFFFFFFFF, "ÐÐ´Ð¼Ð¸Ð½Ñ‹ Ð² ÑÐµÑ‚Ð¸:");
         pD3DFont->PrintShadow(A_Set.aCheckPos.x, A_Set.aCheckPos.y, 0xFFFFFFFF, A_Set.aCheckerMsg.c_str());
-        pD3DFont->PrintShadow(A_Set.pCheckPos.x, A_Set.pCheckPos.y, 0xFFFFFFFF, "Èãðîêè â ñåòè:");
+        pD3DFont->PrintShadow(A_Set.pCheckPos.x, A_Set.pCheckPos.y, 0xFFFFFFFF, "Ð˜Ð³Ñ€Ð¾ÐºÐ¸ Ð² ÑÐµÑ‚Ð¸:");
         pD3DFont->PrintShadow(A_Set.pCheckPos.x, A_Set.pCheckPos.y, 0xFFFFFFFF, A_Set.pCheckerMsg.c_str());
 
         if (time_get() - A_Set.connectTime <= maxTime)
@@ -3046,7 +3046,7 @@ void renderSAMP ( void )
 		*(BYTE*)0xBAB318 = 0;
 		memset_safe((void *)0x53E94C, 0, 1);
 		
-	//	addMessageToChatWindow("%s%s %swith %s%s %s %sloaded (Äîðîáîòêà by %sMarko Friedmann%s)", szColorEnable, M0D_NAME, szColorText, szColorEnable, M0DM_NAME, M0DM_VERS, szColorText, szColorEnable, szColorText);
+	//	addMessageToChatWindow("%s%s %swith %s%s %s %sloaded (Ð”Ð¾Ñ€Ð¾Ð±Ð¾Ñ‚ÐºÐ° by %sMarko Friedmann%s)", szColorEnable, M0D_NAME, szColorText, szColorEnable, M0DM_NAME, M0DM_VERS, szColorText, szColorEnable, szColorText);
 		
 		g_renderSAMP_initSAMPstructs = 1;
 	}

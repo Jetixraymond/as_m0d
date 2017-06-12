@@ -1,4 +1,4 @@
-/*
+п»ї/*
 
 	PROJECT:		mod_sa
 	LICENSE:		See LICENSE in the top level directory
@@ -249,15 +249,15 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 				bsData.Read(szMsg, dwStrLen);
 				szMsg[dwStrLen] = '\0';
 
-                if (strstr(szMsg, "Администратор: ")) {
-                    if (A_Set.bLogBan && strstr(szMsg, " забанил "))
+                if (strstr(szMsg, "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ: ")) {
+                    if (A_Set.bLogBan && strstr(szMsg, " Р·Р°Р±Р°РЅРёР» "))
                         adminLog(A_Set.fLogBan, szMsg);
 
-                    if (A_Set.bLogWarn && strstr(szMsg, " выдал warn "))
+                    if (A_Set.bLogWarn && strstr(szMsg, " РІС‹РґР°Р» warn "))
                         adminLog(A_Set.fLogWarn, szMsg);
                 }
 
-				if (A_Set.bMassTP && A_Set.usMaxPlayerTP <= g_Players->ulMaxPlayerID && strstr(szMsg, "Отправитель: "))
+				if (A_Set.bMassTP && A_Set.usMaxPlayerTP <= g_Players->ulMaxPlayerID && strstr(szMsg, "РћС‚РїСЂР°РІРёС‚РµР»СЊ: "))
 				{
 					std::string Msg = szMsg;
 					auto pos = Msg.find_last_of('[');
@@ -286,7 +286,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 						A_Set.bIpInfo = false;
 					}
 					else
-						if (strstr(szMsg, "Произошла ошибка."))
+						if (strstr(szMsg, "РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР°."))
 							A_Set.bIpInfo = false;
 				}
 
@@ -345,19 +345,19 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 				{
 					if (D3DCOLOR_COMPARE(dwColor, 217, 119, 0))
 					{
-						if (A_Set.bChatcolorsReport && strstr(szMsg, "Жалоба от ") && strstr(szMsg, " на "))
+						if (A_Set.bChatcolorsReport && strstr(szMsg, "Р–Р°Р»РѕР±Р° РѕС‚ ") && strstr(szMsg, " РЅР° "))
 						{
 							changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.dwColorReport), dwStrLen, szMsg);
 							break;
 						}
 						else
-                            if (A_Set.bChatcolorsFeedback && strstr(szMsg, "Репорт от"))
+                            if (A_Set.bChatcolorsFeedback && strstr(szMsg, "Р РµРїРѕСЂС‚ РѕС‚"))
 							{
                                 changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.dwColorFeedback), dwStrLen, szMsg);
 								break;
 							}
 							else
-                                if (A_Set.bChatcolorsReportr && strstr(szMsg, "<-Ответ К"))
+                                if (A_Set.bChatcolorsReportr && strstr(szMsg, "<-РћС‚РІРµС‚ Рљ"))
 								{
                                     changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.dwColorReportr), dwStrLen, szMsg);
 									break;
@@ -368,7 +368,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 						{
                             if (A_Set.bChatcolorsSupport)
 								if (strstr(szMsg, "<SUPPORT-CHAT> ") || strstr(szMsg, "<-") && strstr(szMsg, " to ")
-									&& strstr(szMsg, ": ") || strstr(szMsg, "->Вопрос") && strstr(szMsg, ": "))
+									&& strstr(szMsg, ": ") || strstr(szMsg, "->Р’РѕРїСЂРѕСЃ") && strstr(szMsg, ": "))
 								{
                                     changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.dwColorSupport), dwStrLen, szMsg);
 									break;
@@ -378,7 +378,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
 							if (D3DCOLOR_COMPARE(dwColor, 255, 255, 0))
 							{
                                 if (A_Set.bChatcolorsSms)
-									if (strstr(szMsg, "SMS: ") && (strstr(szMsg, "Отправитель: ") || strstr(szMsg, "Получатель: ")))
+									if (strstr(szMsg, "SMS: ") && (strstr(szMsg, "РћС‚РїСЂР°РІРёС‚РµР»СЊ: ") || strstr(szMsg, "РџРѕР»СѓС‡Р°С‚РµР»СЊ: ")))
 									{
                                         changeColorClientMsg(&bsData, D3DCOLOR_RGBX(A_Set.dwColorSms), dwStrLen, szMsg);
 										break;
@@ -426,7 +426,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                 if (A_Set.bConnectLog && !gta_menu_active()) {
                     A_Set.connectLog.clear();
                     A_Set.connectLog.append(szPlayerName);
-                    A_Set.connectLog.append(" подключается к серверу.");
+                    A_Set.connectLog.append(" РїРѕРґРєР»СЋС‡Р°РµС‚СЃСЏ Рє СЃРµСЂРІРµСЂСѓ.");
                     A_Set.connectTime = time_get();
                 }
 
@@ -473,7 +473,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                 if (A_Set.bDisconnectLog && !gta_menu_active()) {
                     A_Set.disconnectLog.clear();
                     A_Set.disconnectLog.append(szPlayerName);
-                    A_Set.disconnectLog.append(" отключился от сервера.");
+                    A_Set.disconnectLog.append(" РѕС‚РєР»СЋС‡РёР»СЃСЏ РѕС‚ СЃРµСЂРІРµСЂР°.");
                     A_Set.disconnectTime = time_get();
                 }
 
@@ -481,7 +481,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                 if ((it = std::find(A_Set.AdminsOnline.begin(), A_Set.AdminsOnline.end(), playerId)) != A_Set.AdminsOnline.end()) {
                     A_Set.AdminsOnline.erase(it);
                     if (A_Set.AdminsOnline.empty())
-                        A_Set.aCheckerMsg = "\nНет админов в сети";
+                        A_Set.aCheckerMsg = "\nРќРµС‚ Р°РґРјРёРЅРѕРІ РІ СЃРµС‚Рё";
                     else
                         A_Set.aCheckerMsg.erase(A_Set.aCheckerMsg.find(szPlayerName) - 1, 1 + strlen(szPlayerName) + 2 + std::to_string(playerId).length());
                 }
@@ -489,7 +489,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                     if ((it = std::find(A_Set.PlayersOnline.begin(), A_Set.PlayersOnline.end(), playerId)) != A_Set.PlayersOnline.end()) {
                         A_Set.PlayersOnline.erase(it);
                         if (A_Set.PlayersOnline.empty()) {
-                            A_Set.pCheckerMsg = "\nНет игроков в сети";
+                            A_Set.pCheckerMsg = "\nРќРµС‚ РёРіСЂРѕРєРѕРІ РІ СЃРµС‚Рё";
                         }
                         else {
                             auto pos = A_Set.pCheckerMsg.find(szPlayerName);
@@ -633,7 +633,7 @@ bool OnReceivePacket(Packet *p)
 					float offs = g_Players->pRemotePlayer[pId]->pPlayerData->pSAMP_Actor->pGTA_Ped->base.matrix[14] - fpos[2];
 					if (abs(offs - 15) < 0.6 || abs(offs - 175) < 0.6)
 					{
-						addMessageToChatWindow("<Warning> Игрок: %s[%d] использует паблик ГМ.", getPlayerName(pId), pId);
+						addMessageToChatWindow("<Warning> РРіСЂРѕРє: %s[%d] РёСЃРїРѕР»СЊР·СѓРµС‚ РїР°Р±Р»РёРє Р“Рњ.", getPlayerName(pId), pId);
 						dwTimeGM = GetTickCount();
                         return true;
 					}
@@ -644,7 +644,7 @@ bool OnReceivePacket(Packet *p)
 				{
 					if (GetTickCount() - dwTime[pId] > 15000)
 					{
-						addMessageToChatWindow("<Warning>  Игрок: %s[%d] использует крашер.", getPlayerName(pId), pId);
+						addMessageToChatWindow("<Warning>  РРіСЂРѕРє: %s[%d] РёСЃРїРѕР»СЊР·СѓРµС‚ РєСЂР°С€РµСЂ.", getPlayerName(pId), pId);
 						dwTime[pId] = GetTickCount();
 					}
 					bsData.SetWriteOffset(bsData.GetReadOffset() - 112);

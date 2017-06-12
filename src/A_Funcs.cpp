@@ -1,4 +1,4 @@
-#include "main.h"
+ï»¿#include "main.h"
 
 #include <wininet.h>
 #pragma comment ( lib, "Wininet.lib" )
@@ -76,9 +76,9 @@ void OnCloseDialog(void *pDialog)
 				A_Set.byteFrackID = iSelectItem + 1;
 
 			if (A_Set.byteFrackID != 0)
-				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Ïîäòâåðæäåíèå", (char *)std::string("Âû óâåðåíû ÷òî õîòèòå íàçíà÷èòü " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " íà ëèäåðñòâî " + szFracktionName[A_Set.byteFrackID - 1]/*std::string(getfractionname(byteFrackID))*/).c_str(), "Íàçíà÷èòü", "Çàêðûòü");
+				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "ÐŸÐ¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´ÐµÐ½Ð¸Ðµ", (char *)std::string("Ð’Ñ‹ ÑƒÐ²ÐµÑ€ÐµÐ½Ñ‹ Ñ‡Ñ‚Ð¾ Ñ…Ð¾Ñ‚Ð¸Ñ‚Ðµ Ð½Ð°Ð·Ð½Ð°Ñ‡Ð¸Ñ‚ÑŒ " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " Ð½Ð° Ð»Ð¸Ð´ÐµÑ€ÑÑ‚Ð²Ð¾ " + szFracktionName[A_Set.byteFrackID - 1]/*std::string(getfractionname(byteFrackID))*/).c_str(), "ÐÐ°Ð·Ð½Ð°Ñ‡Ð¸Ñ‚ÑŒ", "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ");
 			else
-				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Ïîäòâåðæäåíèå", (char *)std::string("Âû óâåðåíû ÷òî õîòèòå cíÿòü " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " ñ ëèäåðñòâà").c_str(), "Íàçíà÷èòü", "Çàêðûòü");
+				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "ÐŸÐ¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´ÐµÐ½Ð¸Ðµ", (char *)std::string("Ð’Ñ‹ ÑƒÐ²ÐµÑ€ÐµÐ½Ñ‹ Ñ‡Ñ‚Ð¾ Ñ…Ð¾Ñ‚Ð¸Ñ‚Ðµ cÐ½ÑÑ‚ÑŒ " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " Ñ Ð»Ð¸Ð´ÐµÑ€ÑÑ‚Ð²Ð°").c_str(), "ÐÐ°Ð·Ð½Ð°Ñ‡Ð¸Ñ‚ÑŒ", "Ð—Ð°ÐºÑ€Ñ‹Ñ‚ÑŒ");
 			break;
 		}
 		}
@@ -246,7 +246,7 @@ float GeoDistance(float *start, float *end)
 //		{
 //			//case WM_KEYUP:
 //			{
-//				//char *key = key_name(wParam);//code key // íå îïðåäåëÿåò shift/alt/ctrl (äðóãèå êîäû êëàâèøü)
+//				//char *key = key_name(wParam);//code key // Ð½Ðµ Ð¾Ð¿Ñ€ÐµÐ´ÐµÐ»ÑÐµÑ‚ shift/alt/ctrl (Ð´Ñ€ÑƒÐ³Ð¸Ðµ ÐºÐ¾Ð´Ñ‹ ÐºÐ»Ð°Ð²Ð¸ÑˆÑŒ)
 //				//addMessageToChatWindow("Key: %s, Code: 0x%X | lParam: 0x%X", key, wParam, lParam);
 //			break;
 //			}
@@ -278,7 +278,7 @@ LRESULT CALLBACK LLKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
 
                         const char *key = key_name(vk);
                         if (key == nullptr) {
-                            addMessageToChatWindow("[KEY_HOOK] Unknown key: 0x%X. Äàííàÿ êëàâèøà ïðîèãíîðèðîâàíà äëÿ áèíäà. Åñëè òðåáóåòñÿ îòïèøèòåñü.", vk);
+                            addMessageToChatWindow("[KEY_HOOK] Unknown key: 0x%X. Ð”Ð°Ð½Ð½Ð°Ñ ÐºÐ»Ð°Ð²Ð¸ÑˆÐ° Ð¿Ñ€Ð¾Ð¸Ð³Ð½Ð¾Ñ€Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð° Ð´Ð»Ñ Ð±Ð¸Ð½Ð´Ð°. Ð•ÑÐ»Ð¸ Ñ‚Ñ€ÐµÐ±ÑƒÐµÑ‚ÑÑ Ð¾Ñ‚Ð¿Ð¸ÑˆÐ¸Ñ‚ÐµÑÑŒ.", vk);
                         }
                         else {
                             parAdminSetting.keycombo.emplace_back(uint8_t(vk), key);//.push_back(std::make_pair(vk, key));
@@ -311,7 +311,7 @@ void adminMainThread(void)
                 if (g_Players->iIsListed[sPlId] && g_Players->pRemotePlayer[sPlId]->pPlayerData->pSAMP_Actor != nullptr)
                 {
                     say("/sethp %hu %d", sPlId, A_Set.iHpCount);
-                    addMessageToChatWindow("Èãðîêó %s[%d] âûäàíî %d HP", getPlayerName(sPlId), sPlId, A_Set.iHpCount);
+                    addMessageToChatWindow("Ð˜Ð³Ñ€Ð¾ÐºÑƒ %s[%d] Ð²Ñ‹Ð´Ð°Ð½Ð¾ %d HP", getPlayerName(sPlId), sPlId, A_Set.iHpCount);
                     timer = dwCurrentTime;
                     return;
                 }
@@ -321,7 +321,7 @@ void adminMainThread(void)
             {
                 A_Set.bMassHP = false;
                 sPlId = 0;
-                addMessageToChatWindow("Âûäà÷à HP îêîí÷åíà");
+                addMessageToChatWindow("Ð’Ñ‹Ð´Ð°Ñ‡Ð° HP Ð¾ÐºÐ¾Ð½Ñ‡ÐµÐ½Ð°");
                 MessageBeep(MB_ICONEXCLAMATION);
             }
         }
@@ -346,7 +346,7 @@ void adminMainThread(void)
                     else
                     {
                         say("/givegun %d %d %d", sPlId, A_Set.byteWeaponID, iAmmo);
-                        addMessageToChatWindow("Èãðîêó %s[%d] âûäàíî îðóæèå", getPlayerName(sPlId), sPlId);
+                        addMessageToChatWindow("Ð˜Ð³Ñ€Ð¾ÐºÑƒ %s[%d] Ð²Ñ‹Ð´Ð°Ð½Ð¾ Ð¾Ñ€ÑƒÐ¶Ð¸Ðµ", getPlayerName(sPlId), sPlId);
                         sPlId++;
                         iAmmo = A_Set.iAmmoCount;
                     }
@@ -364,7 +364,7 @@ void adminMainThread(void)
                 A_Set.bGiveGuns = false;
                 sPlId = 0;
                 iAmmo = 0;
-                addMessageToChatWindow("Âûäà÷à îðóæèÿ îêîí÷åíà");
+                addMessageToChatWindow("Ð’Ñ‹Ð´Ð°Ñ‡Ð° Ð¾Ñ€ÑƒÐ¶Ð¸Ñ Ð¾ÐºÐ¾Ð½Ñ‡ÐµÐ½Ð°");
                 MessageBeep(MB_ICONEXCLAMATION);
             }
         }
@@ -387,7 +387,7 @@ void adminMainThread(void)
                 if (!A_Set.usMaxPlayerTP)
                 {
                     A_Set.bMassTP = false;
-                    addMessageToChatWindow("Òåëåïîðòèðîâàíèå çàâåðøåíî");
+                    addMessageToChatWindow("Ð¢ÐµÐ»ÐµÐ¿Ð¾Ñ€Ñ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ Ð·Ð°Ð²ÐµÑ€ÑˆÐµÐ½Ð¾");
                 }
         }
     #pragma endregion
@@ -426,7 +426,7 @@ void adminMainThread(void)
         POINT cursorPos = CursorPos();
         static POINT offset, newPos;
 
-        if (cursorPos >= A_Set.aCheckPos && cursorPos <= (A_Set.aCheckPos + POINT{ long(pD3DFont->DrawLength("Àäìèíû â ñåòè:")), pD3DFont->DrawHeight() /* * (1 + A_Set.AOnline.size())*/ })) {
+        if (cursorPos >= A_Set.aCheckPos && cursorPos <= (A_Set.aCheckPos + POINT{ long(pD3DFont->DrawLength("ÐÐ´Ð¼Ð¸Ð½Ñ‹ Ð² ÑÐµÑ‚Ð¸:")), pD3DFont->DrawHeight() /* * (1 + A_Set.AOnline.size())*/ })) {
             if (KEY_PRESSED(0x1)) {
                 offset = cursorPos - A_Set.aCheckPos;
             }
@@ -438,7 +438,7 @@ void adminMainThread(void)
             }
         }
         else {
-            if (cursorPos >= A_Set.pCheckPos && cursorPos <= (A_Set.pCheckPos + POINT{ long(pD3DFont->DrawLength("Èãðîêè â ñåòè:")), pD3DFont->DrawHeight() })) {
+            if (cursorPos >= A_Set.pCheckPos && cursorPos <= (A_Set.pCheckPos + POINT{ long(pD3DFont->DrawLength("Ð˜Ð³Ñ€Ð¾ÐºÐ¸ Ð² ÑÐµÑ‚Ð¸:")), pD3DFont->DrawHeight() })) {
                 if (KEY_PRESSED(0x1)) {
                     offset = cursorPos - A_Set.pCheckPos;
                 }
@@ -450,7 +450,7 @@ void adminMainThread(void)
                 }
             }
             else {
-                if ((A_Set.bConnectLog || A_Set.bDisconnectLog) && (cursorPos >= A_Set.connectionPos && cursorPos <= (A_Set.connectionPos + POINT{ long(pD3DFont->DrawLength(" ïîäêëþ÷åí ê ñåðâåðó") + 15), pD3DFont->DrawHeight() * 2 }))) {
+                if ((A_Set.bConnectLog || A_Set.bDisconnectLog) && (cursorPos >= A_Set.connectionPos && cursorPos <= (A_Set.connectionPos + POINT{ long(pD3DFont->DrawLength(" Ð¿Ð¾Ð´ÐºÐ»ÑŽÑ‡ÐµÐ½ Ðº ÑÐµÑ€Ð²ÐµÑ€Ñƒ") + 15), pD3DFont->DrawHeight() * 2 }))) {
                     if (KEY_PRESSED(0x1)) {
                         offset = cursorPos - A_Set.connectionPos;
                     }
