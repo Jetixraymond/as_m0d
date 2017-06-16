@@ -2945,7 +2945,7 @@ inline void renderCheckers()
 {
     traceLastFunc("renderCheckers()");
 
-    static const uint32_t maxTime = 20000;//ms^(-1)
+    static const uint32_t maxTime = 30000;//ms^(-1)
     static const uint32_t thresholdTime = maxTime / 2;
     static const uint32_t coefficientTime = thresholdTime / 250;
 
@@ -3122,42 +3122,6 @@ void mapMenuTeleport ( void )
 	}
 }
 
-void texturesInitResources ( IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentationParameters )
-{
-	if ( set.speedometer_enable
-	 &&	 (
-			 fopen(set.speedometer_speedo_png_filename, "rb") == NULL
-	 ||	 fopen(set.speedometer_needle_png_filename, "rb") == NULL
-	 ) )
-	{
-		Log( "Could not find the speedometer files, disabling it." );
-		set.speedometer_enable = false;
-		set.speedometer_old_enable = true;
-	}
-	else if ( set.speedometer_enable )
-	{
-		// init speedo
-		tSpeedoPNG = NULL;
-		sSpeedoPNG = NULL;
-		tNeedlePNG = NULL;
-		sNeedlePNG = NULL;
-		if ( !tSpeedoPNG )
-			D3DXCreateTextureFromFile( pDevice, set.speedometer_speedo_png_filename, &tSpeedoPNG );
-		if ( !sSpeedoPNG )
-			D3DXCreateSprite( pDevice, &sSpeedoPNG );
-		if ( !tNeedlePNG )
-			D3DXCreateTextureFromFile( pDevice, set.speedometer_needle_png_filename, &tNeedlePNG );
-		if ( !sNeedlePNG )
-			D3DXCreateSprite( pDevice, &sNeedlePNG );
-		needlePos.x = ( pPresentationParameters->BackBufferWidth / 1024.0f );
-		needlePos.y = ( pPresentationParameters->BackBufferHeight / 768.0f );
-		speedoPos.x = ( 750.0f * needlePos.x );
-		speedoPos.y = pPresentationParameters->BackBufferHeight - ( 292.0f * needlePos.y );
-	}
-	
-	// ret
-}
-
 float		fpsDisplay, fpsBuf1, fpsBuf2, fpsBuf3, fpsBuf4;
 uint32_t	fps_time = GetTickCount();
 int			fpsFrameCounter;
@@ -3203,14 +3167,6 @@ void proxyID3DDevice9_UnInitOurShit ( void )
 	SAFE_RELEASE( chams_green );
 	SAFE_RELEASE( chams_blue );
 	SAFE_RELEASE( chams_red );
-
-	if ( set.speedometer_enable )
-	{
-		SAFE_RELEASE( sSpeedoPNG );
-		SAFE_RELEASE( tSpeedoPNG );
-		SAFE_RELEASE( sNeedlePNG );
-		SAFE_RELEASE( tNeedlePNG );
-	}
 	
 	// death texture
 	SAFE_RELEASE( pSpriteTexture );
@@ -3243,9 +3199,6 @@ void proxyID3DDevice9_InitOurShit ( D3DPRESENT_PARAMETERS *pPresentationParamete
 	GenerateShader( origIDirect3DDevice9, &chams_green, 0.8f, 0, 1.0f, 0 );
 	GenerateShader( origIDirect3DDevice9, &chams_blue, 0.8f, 0, 0, 1.0f );
 	GenerateShader( origIDirect3DDevice9, &chams_red, 0.8f, 1.0f, 0, 0 );
-
-	// load GUI textures/sprits
-	texturesInitResources( origIDirect3DDevice9, pPresentationParameters );
 
 	// load death texture
 	LoadSpriteTexture();
@@ -3539,6 +3492,9 @@ void renderHandler()
 
 		if ( set.d3dtext_hud )
 		{
+
+            uint16_t fps_lenght;
+
 			if (cheat_panic() || cheat_state->state == CHEAT_STATE_NONE)
 			{
 				if (set.flickering_problem)
@@ -3570,43 +3526,36 @@ void renderHandler()
 					if ( gta_menu_active() )
 						goto no_render;
 
-				if( !gta_menu_active() )
-				{
-					char timebuf[256]; 
-					SYSTEMTIME time; 
-					GetLocalTime(&time);       
-					sprintf(timebuf, "%02d:%02d:%02d", time.wHour, time.wMinute, time.wSecond);       
-					HUD_TEXT_TGL( x, D3DCOLOR_XRGB( 255, 255, 255 ), timebuf);  
-				}
+                if (!gta_menu_active())
+                {
+                    char timebuf[256];
+                    SYSTEMTIME time;
+                    GetLocalTime(&time);
+                    sprintf(timebuf, "%02d:%02d:%02d", time.wHour, time.wMinute, time.wSecond);
+                    HUD_TEXT_TGL(x, D3DCOLOR_XRGB(255, 255, 255), timebuf);
 
-				if ( set.hud_indicator_inv )
-				{
-					HUD_TEXT_TGL( x, cheat_state->_generic.hp_cheat ? color_enabled : color_disabled, "Inv" );
-				}
+                    if (set.hud_indicator_inv)
+                    {
+                        HUD_TEXT_TGL(x, cheat_state->_generic.hp_cheat ? color_enabled : color_disabled, "Inv");
+                    }
 
-				if ( set.hud_fps_draw )
-				{
-					float		m_FPS = getFPS();
-					int			m_FPS_int = (int)m_FPS;
-					uint32_t	color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
-					if ( m_FPS_int >= 23 )
-						color_fps = D3DCOLOR_XRGB( 0, 200, 0 );
-					else if ( m_FPS_int >= 13 && m_FPS_int <= 22 )
-						color_fps = D3DCOLOR_XRGB( 200, 200, 0 );
-					else if ( m_FPS_int <= 12 )
-						color_fps = D3DCOLOR_XRGB( 200, 0, 0 );
-					if ( pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled() )
-					{
-						_snprintf_s( buf, sizeof(buf)-1, "FPS:{FFFFFF} %0.0f (%d)", m_FPS, *(int *)0xC1704C );
-					}
-					else
-					{
-						_snprintf_s( buf, sizeof(buf)-1, "FPS:{FFFFFF} %0.0f", m_FPS );
-					}
+                    if (set.hud_fps_draw)
+                    {
+                        float		m_FPS = getFPS();
+                        if (pGameInterface && pGameInterface->GetSettings()->IsFrameLimiterEnabled())
+                        {
+                            _snprintf_s(buf, sizeof(buf) - 1, "FPS:{FFFFFF} %0.0f (%d)", m_FPS, *(int *)0xC1704C);
+                        }
+                        else
+                        {
+                            _snprintf_s(buf, sizeof(buf) - 1, "FPS:{FFFFFF} %0.0f", m_FPS);
+                        }
 
-					pD3DFont->PrintShadow( pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 2,
-										   pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf );
-				}
+                        fps_lenght = pD3DFont->DrawLength(buf) + 2;
+                        pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - fps_lenght,
+                            pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf);
+                    }
+                }
 			}
 
             if (!gta_menu_active()) {
@@ -3658,8 +3607,31 @@ void renderHandler()
 
                         _snprintf_s(buf, sizeof(buf) - 1, "Coords: {FFFFFF}%0.2f %0.2f %0.2f  %d", coord[0], coord[1], coord[2],
                             gta_interior_id_get());
-                        pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - pD3DFont->DrawLength(buf) - 60,
+                        fps_lenght += pD3DFont->DrawLength(buf) + 2;
+                        pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - fps_lenght,
                             pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf);
+                    }
+
+                    if (A_Set.bHudPing) {
+                        static int timeUpdate;
+                        if (g_Players != nullptr && g_Players->pLocalPlayer != nullptr) {
+                            static int &ping = g_Players->iLocalPlayerPing;
+                            if (time_get() - timeUpdate > MSEC_TO_TIME(1500)) { //update scoreboard - 3sec
+                                updateScoreboardData();
+                                timeUpdate = time_get();
+                            }
+                            uint32_t color_ping = 0;
+                            if (ping <= 100)
+                                color_ping = D3DCOLOR_ARGB(0, 0, 200, 0);
+                            else if (ping > 100 && ping < 250)
+                                color_ping = D3DCOLOR_ARGB(0, 200, 200, 0);
+                            else if (ping >= 250)
+                                color_ping = D3DCOLOR_ARGB(0, 200, 0, 0);
+                            _snprintf_s(buf, sizeof(buf) - 1, "PING:{%06X} %d", color_ping, ping);
+                            fps_lenght += pD3DFont->DrawLength(buf) + 2;
+                            pD3DFont->PrintShadow(pPresentParam.BackBufferWidth - fps_lenght,
+                                pPresentParam.BackBufferHeight - pD3DFont->DrawHeight() - 2, D3DCOLOR_XRGB(148, 0, 211), buf);
+                        }
                     }
                 }
 

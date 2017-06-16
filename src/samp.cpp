@@ -218,15 +218,7 @@ struct stScoreboardInfo *stGetScoreboardInfo(void)
 
 struct stDialogInfo *stGetDialogInfo(void)
 {
-	if (g_dwSAMP_Addr == NULL)
-		return nullptr;
-
-	uint32_t    dialog_ptr;
-	dialog_ptr = (UINT_PTR)* (uint32_t *)((uint8_t *)(void *)((uint8_t *)g_dwSAMP_Addr + SAMP_DIALOG_INFO_OFFSET));
-	if (dialog_ptr == NULL)
-		return nullptr;
-
-	return (struct stDialogInfo *)dialog_ptr;
+    return GetSAMPPtrInfo<stDialogInfo *>(SAMP_DIALOG_INFO_OFFSET);
 }
 
 int isBadSAMPVehicleID(int iVehicleID)

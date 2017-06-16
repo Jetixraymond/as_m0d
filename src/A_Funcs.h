@@ -12,3 +12,4 @@ void            string2Keycombo(const std::string &str, keycombo &ret);
 std::string     keycombo2String(const keycombo &keycombo);
 void            adminLog(FILE *fileLog, const char *fmt, ...);
 void            stringSplit(std::string const &source, std::string const &delimiter, std::vector <std::string> &out);
+void            setFontParams(CD3DFont **pFont, const char *fontName, uint8_t fontHeight);

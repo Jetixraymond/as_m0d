@@ -84,9 +84,6 @@ void sampMainCheat(void)
 		}
 	}
 
-	if (KEYCOMBO_PRESSED(set.key_player_info_list))
-		cheat_state->player_info_list ^= 1;
-
 	if (KEYCOMBO_PRESSED(set.key_rejoin))
 	{
 		restartGame();
@@ -426,6 +423,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                 if (A_Set.bConnectLog && !gta_menu_active()) {
                     A_Set.connectLog.clear();
                     A_Set.connectLog.append(szPlayerName);
+                    A_Set.connectLog.append("[" + std::to_string(playerId) + "]");
                     A_Set.connectLog.append(" подключается к серверу.");
                     A_Set.connectTime = time_get();
                 }
@@ -473,6 +471,7 @@ void HandleRPCPacketFunc(unsigned char id, RPCParameters *rpcParams, void(*callb
                 if (A_Set.bDisconnectLog && !gta_menu_active()) {
                     A_Set.disconnectLog.clear();
                     A_Set.disconnectLog.append(szPlayerName);
+                    A_Set.disconnectLog.append("[" + std::to_string(playerId) + "]");
                     A_Set.disconnectLog.append(" отключился от сервера.");
                     A_Set.disconnectTime = time_get();
                 }

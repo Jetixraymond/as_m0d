@@ -90,6 +90,8 @@
 #define ID_COLORSETTING_SAVE_BUTTON     100
 #define ID_CONNECT_LOG                  101
 #define ID_DISCONNECT_LOG               102
+#define ID_FONT_HEIGHT                  103
+#define ID_FONT_NAME                    104
 
 #ifdef __CHEAT_VEHRECORDING_H__
 #define ID_MENU_ROUTES			26
@@ -2667,6 +2669,9 @@ static int menu_callback_adminsetting(int op, struct menu_item *item)
             return A_Set.bChatcolorsReport;
         case ID_COLORSETTING_SUPPORT_ENABLE:
             return A_Set.bChatcolorsSupport;
+        case ID_FONT_NAME:
+            menu_item_name_set(item, "Font name: %s", A_Set.fontName.c_str());
+            return 0;
 		}
 		break;
 
@@ -2720,8 +2725,8 @@ static int menu_callback_adminsetting(int op, struct menu_item *item)
 	case MENU_OP_DEC:
 	case MENU_OP_INC:
 		mod = (op == MENU_OP_DEC) ? -1 : 1;
-		switch (item->id)
-		{
+        switch (item->id)
+        {
         case ID_TRACE_TIME:
             if (mod == -1 && A_Set.dwTraceTimer > 1500)
                 A_Set.dwTraceTimer -= 100;
@@ -2805,6 +2810,17 @@ static int menu_callback_adminsetting(int op, struct menu_item *item)
         case ID_COLORSETTING_SUPPORT_B:
             colorChange(A_Set.dwColorSupport, RGB::BLUE, mod, item);
             break;
+        case ID_FONT_HEIGHT:
+            if ((mod == -1 && A_Set.byteFontHeight > 6) || (mod == 1 && A_Set.byteFontHeight < 28)) {
+                A_Set.byteFontHeight += mod;
+                /*delete pD3DFont;
+                pD3DFont = new CD3DFont(A_Set.fontName.c_str(), A_Set.byteFontHeight, FCR_BORDER);
+                pD3DFont->Initialize(origIDirect3DDevice9);*/
+                setFontParams(&pD3DFont, A_Set.fontName.c_str(), A_Set.byteFontHeight);
+                A_Ini.SetInt("FontSetting", "MainHeight", A_Set.byteFontHeight);
+                menu_item_name_set(item, "Height  %hhu", A_Set.byteFontHeight);
+            }
+            break;
 		}
 
 	}
@@ -2829,23 +2845,11 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 		case ID_HUDIND_WEAPON:
 			return set.hud_indicator_weapon;
 
-		case ID_HUDIND_MONEY:
-			return set.hud_indicator_money;
-
 		case ID_HUDIND_FREEZE:
 			return set.hud_indicator_freeze;
 
 		case ID_HUDIND_INVEH_AIRBRK:
 			return set.hud_indicator_inveh_airbrk;
-
-		case ID_HUDIND_INVEH_STICK:
-			return set.hud_indicator_inveh_stick;
-
-		case ID_HUDIND_INVEH_BRKDANCE:
-			return set.hud_indicator_inveh_brkdance;
-
-		case ID_HUDIND_INVEH_SPIDER:
-			return set.hud_indicator_inveh_spider;
 
 		case ID_HUDIND_ONFOOT_FLY:
 			return set.hud_indicator_onfoot_fly;
@@ -2856,26 +2860,11 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 		case ID_HUDIND_ONFOOT_AIRBRK:
 			return set.hud_indicator_onfoot_airbrk;
 
-		case ID_HUDIND_ONFOOT_STICK:
-			return set.hud_indicator_onfoot_stick;
-
-		case ID_HUDIND_ONFOOT_AIM:
-			return set.hud_indicator_onfoot_aim;
-
 		case ID_HUDIND_POS:
 			return set.hud_indicator_pos;
 
 		case ID_HUDIND_FPS:
 			return set.hud_fps_draw;
-
-		case ID_HUDIND_LB_BARS:
-			return set.left_bottom_bars_enable;
-
-		case ID_HUDIND_SURF:
-			return set.hud_indicator_surf;
-
-		case ID_HUDIND_FREEZEROT:
-			return set.hud_indicator_freezerot;
 		}
 
 		return 0;
@@ -2901,28 +2890,12 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			set.hud_indicator_weapon ^= 1;
 			break;
 
-		case ID_HUDIND_MONEY:
-			set.hud_indicator_money ^= 1;
-			break;
-
 		case ID_HUDIND_FREEZE:
 			set.hud_indicator_freeze ^= 1;
 			break;
 
 		case ID_HUDIND_INVEH_AIRBRK:
 			set.hud_indicator_inveh_airbrk ^= 1;
-			break;
-
-		case ID_HUDIND_INVEH_STICK:
-			set.hud_indicator_inveh_stick ^= 1;
-			break;
-
-		case ID_HUDIND_INVEH_BRKDANCE:
-			set.hud_indicator_inveh_brkdance ^= 1;
-			break;
-
-		case ID_HUDIND_INVEH_SPIDER:
-			set.hud_indicator_inveh_spider ^= 1;
 			break;
 
 		case ID_HUDIND_ONFOOT_FLY:
@@ -2937,32 +2910,12 @@ static int menu_callback_hudindicators ( int op, struct menu_item *item )
 			set.hud_indicator_onfoot_airbrk ^= 1;
 			break;
 
-		case ID_HUDIND_ONFOOT_STICK:
-			set.hud_indicator_onfoot_stick ^= 1;
-			break;
-
-		case ID_HUDIND_ONFOOT_AIM:
-			set.hud_indicator_onfoot_aim ^= 1;
-			break;
-
 		case ID_HUDIND_POS:
 			set.hud_indicator_pos ^= 1;
 			break;
 
 		case ID_HUDIND_FPS:
 			set.hud_fps_draw ^= 1;
-			break;
-
-		case ID_HUDIND_LB_BARS:
-			set.left_bottom_bars_enable ^= 1;
-			break;
-
-		case ID_HUDIND_SURF:
-			set.hud_indicator_surf ^= 1;
-			break;
-
-		case ID_HUDIND_FREEZEROT:
-			set.hud_indicator_freezerot ^= 1;
 			break;
 
 		default:
@@ -3133,6 +3086,22 @@ static int menu_callback_netpatches(int op, struct menu_item *item)
 	return 0;
 }
 
+inline void addColorItems(struct menu *menu, DWORD &color, int startID)
+{
+    char name[32];
+    snprintf(name, sizeof(name), "Color R       %02X", (color >> 16) & 0xFF);
+    menu_item_add(menu, NULL, name, startID, color, NULL);
+    snprintf(name, sizeof(name), "Color G       %02X", (color >> 8) & 0xFF);
+    menu_item_add(menu, NULL, name, startID + 1, color, NULL);
+    snprintf(name, sizeof(name), "Color B       %02X", color & 0xFF);
+    menu_item_add(menu, NULL, name, startID + 2, color, NULL);
+}
+
+inline void addSaveButton(struct menu *menu, ColorSettingCode code)
+{
+    menu_item_add(menu, NULL, "\t  >>>  Save color in ini file <<<", ID_COLORSETTING_SAVE_BUTTON, 0xFFFFFF00, (void*)code);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// FUNCTIONS DONE ///////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -3232,8 +3201,6 @@ void menu_maybe_init ( void )
 
 	/** Menu Items **/
 	/*admin menu*/
-#define ADD_SAVE_BUTTON(menu, code) menu_item_add(menu, NULL, "\t  >>>  Save color  <<<", ID_COLORSETTING_SAVE_BUTTON, 0xFFFFFF00, (void*)code)
-
 	menu_item_add(menu_main, NULL, "\tAdmin Samp-RP", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
 	menu_item_add(menu_main, menu_admintool, "Admin Tools", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 
@@ -3250,53 +3217,28 @@ void menu_maybe_init ( void )
 
 	menu_item_add(menu_admin_setting, menu_color_sms_setting, "SMS", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_color_sms_setting, NULL, "Change color", ID_COLORSETTING_SMS_ENABLE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorSms >> 16) & 0xFF);
-    menu_item_add(menu_color_sms_setting, NULL, name, ID_COLORSETTING_SMS_R, A_Set.dwColorSms, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorSms >> 8) & 0xFF);
-    menu_item_add(menu_color_sms_setting, NULL, name, ID_COLORSETTING_SMS_G, A_Set.dwColorSms, NULL);
-    snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorSms & 0xFF);
-    menu_item_add(menu_color_sms_setting, NULL, name, ID_COLORSETTING_SMS_B, A_Set.dwColorSms, NULL);
-    ADD_SAVE_BUTTON(menu_color_sms_setting, ColorSettingCode::SMS);
+    addColorItems(menu_color_sms_setting, A_Set.dwColorSms, ID_COLORSETTING_SMS_R);
+    addSaveButton(menu_color_sms_setting, ColorSettingCode::SMS);
 
 	menu_item_add(menu_admin_setting, menu_color_report_setting, "Report", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_color_report_setting, NULL, "Change color", ID_COLORSETTING_REPORT_ENABLE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorReport >> 16) & 0xFF);
-    menu_item_add(menu_color_report_setting, NULL, name, ID_COLORSETTING_REPORT_R, A_Set.dwColorReport, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorReport >> 8) & 0xFF);
-    menu_item_add(menu_color_report_setting, NULL, name, ID_COLORSETTING_REPORT_G, A_Set.dwColorReport, NULL);
-    snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorReport & 0xFF);
-    menu_item_add(menu_color_report_setting, NULL, name, ID_COLORSETTING_REPORT_B, A_Set.dwColorReport, NULL);
-    ADD_SAVE_BUTTON(menu_color_report_setting, ColorSettingCode::REPORT);
+    addColorItems(menu_color_report_setting, A_Set.dwColorReport, ID_COLORSETTING_REPORT_R);
+    addSaveButton(menu_color_report_setting, ColorSettingCode::REPORT);
 
 	menu_item_add(menu_admin_setting, menu_color_reportr_setting, "Reportr", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_color_reportr_setting, NULL, "Change color", ID_COLORSETTING_REPORTR_ENABLE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorReportr >> 16) & 0xFF);
-    menu_item_add(menu_color_reportr_setting, NULL, name, ID_COLORSETTING_REPORTR_R, A_Set.dwColorReportr, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorReportr >> 8) & 0xFF);
-    menu_item_add(menu_color_reportr_setting, NULL, name, ID_COLORSETTING_REPORTR_G, A_Set.dwColorReportr, NULL);
-    snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorReportr & 0xFF);
-    menu_item_add(menu_color_reportr_setting, NULL, name, ID_COLORSETTING_REPORTR_B, A_Set.dwColorReportr, NULL);
-    ADD_SAVE_BUTTON(menu_color_reportr_setting, ColorSettingCode::REPORTR);
+    addColorItems(menu_color_reportr_setting, A_Set.dwColorReportr, ID_COLORSETTING_REPORTR_R);
+    addSaveButton(menu_color_reportr_setting, ColorSettingCode::REPORTR);
 
 	menu_item_add(menu_admin_setting, menu_color_feedback_setting, "Feedback", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_color_feedback_setting, NULL, "Change color", ID_COLORSETTING_FEEDBACK_ENABLE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorFeedback >> 16) & 0xFF);
-    menu_item_add(menu_color_feedback_setting, NULL, name, ID_COLORSETTING_FEEDBACK_R, A_Set.dwColorFeedback, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorFeedback >> 8) & 0xFF);
-    menu_item_add(menu_color_feedback_setting, NULL, name, ID_COLORSETTING_FEEDBACK_G, A_Set.dwColorFeedback, NULL);
-    snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorFeedback & 0xFF);
-    menu_item_add(menu_color_feedback_setting, NULL, name, ID_COLORSETTING_FEEDBACK_B, A_Set.dwColorFeedback, NULL);
-    ADD_SAVE_BUTTON(menu_color_feedback_setting, ColorSettingCode::FEEDBACK);
+    addColorItems(menu_color_feedback_setting, A_Set.dwColorFeedback, ID_COLORSETTING_FEEDBACK_R);
+    addSaveButton(menu_color_feedback_setting, ColorSettingCode::FEEDBACK);
 
 	menu_item_add(menu_admin_setting, menu_color_support_setting, "Support", ID_NONE, MENU_COLOR_DEFAULT, NULL);
 	menu_item_add(menu_color_support_setting, NULL, "Change color", ID_COLORSETTING_SUPPORT_ENABLE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorSupport >> 16) & 0xFF);
-    menu_item_add(menu_color_support_setting, NULL, name, ID_COLORSETTING_SUPPORT_R, A_Set.dwColorSupport, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorSupport >> 8) & 0xFF);
-    menu_item_add(menu_color_support_setting, NULL, name, ID_COLORSETTING_SUPPORT_G, A_Set.dwColorSupport, NULL);
-    snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorSupport & 0xFF);
-    menu_item_add(menu_color_support_setting, NULL, name, ID_COLORSETTING_SUPPORT_B, A_Set.dwColorSupport, NULL);
-    ADD_SAVE_BUTTON(menu_color_support_setting, ColorSettingCode::SUPPORT);
+    addColorItems(menu_color_support_setting, A_Set.dwColorSupport, ID_COLORSETTING_SUPPORT_R);
+    addSaveButton(menu_color_support_setting, ColorSettingCode::SUPPORT);
 
     menu_item_add(menu_admin_setting, NULL, "\tBullet trace setting", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
 	snprintf(name, sizeof(name), "Time %u ms", A_Set.dwTraceTimer);
@@ -3305,22 +3247,18 @@ void menu_maybe_init ( void )
 	menu_item_add(menu_admin_setting, NULL, name, ID_TRACE_COUNT, MENU_COLOR_DEFAULT, NULL);
 
 	menu_item_add(menu_admin_setting, menu_color_trace_setting, "Color trace", ID_NONE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorTracer >> 16) & 0xFF);
-    menu_item_add(menu_color_trace_setting, NULL, name, ID_TRACE_COLOR_R, A_Set.dwColorTracer, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorTracer >> 8) & 0xFF);
-    menu_item_add(menu_color_trace_setting, NULL, name, ID_TRACE_COLOR_G, A_Set.dwColorTracer, NULL);
-	snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorTracer & 0xFF);
-    menu_item_add(menu_color_trace_setting, NULL, name, ID_TRACE_COLOR_B, A_Set.dwColorTracer, NULL);
-    ADD_SAVE_BUTTON(menu_color_trace_setting, ColorSettingCode::TRACER);
+    addColorItems(menu_color_trace_setting, A_Set.dwColorTracer, ID_TRACE_COLOR_R);
+    addSaveButton(menu_color_trace_setting, ColorSettingCode::TRACER);
 
 	menu_item_add(menu_admin_setting, menu_color_trace_hit_setting, "Color hit trace", ID_NONE, MENU_COLOR_DEFAULT, NULL);
-    snprintf(name, sizeof(name), "Color R       %02X", (A_Set.dwColorTracerHit >> 16) & 0xFF);
-    menu_item_add(menu_color_trace_hit_setting, NULL, name, ID_TRACE_COLOR_HIT_R, A_Set.dwColorTracerHit, NULL);
-    snprintf(name, sizeof(name), "Color G       %02X", (A_Set.dwColorTracerHit >> 8) & 0xFF);
-    menu_item_add(menu_color_trace_hit_setting, NULL, name, ID_TRACE_COLOR_HIT_G, A_Set.dwColorTracerHit, NULL);
-	snprintf(name, sizeof(name), "Color B       %02X", A_Set.dwColorTracerHit & 0xFF);
-    menu_item_add(menu_color_trace_hit_setting, NULL, name, ID_TRACE_COLOR_HIT_B, A_Set.dwColorTracerHit, NULL);
-    ADD_SAVE_BUTTON(menu_color_trace_hit_setting, ColorSettingCode::TRACERHIT);
+    addColorItems(menu_color_trace_hit_setting, A_Set.dwColorTracerHit, ID_TRACE_COLOR_HIT_R);
+    addSaveButton(menu_color_trace_hit_setting, ColorSettingCode::TRACERHIT);
+
+    menu_item_add(menu_admin_setting, NULL, "\tFonts", ID_NONE, MENU_COLOR_SEPARATOR, NULL);
+    snprintf(name, sizeof(name), "Height  %hhu", A_Set.byteFontHeight);
+    menu_item_add(menu_admin_setting, NULL, name, ID_FONT_HEIGHT, MENU_COLOR_DEFAULT, NULL);
+    snprintf(name, sizeof(name), "Font name  %s", A_Set.fontName.c_str());
+    menu_item_add(menu_admin_setting, NULL, name, ID_FONT_NAME, MENU_COLOR_DEFAULT, NULL);
 	/*end admin menu*/
 
 	/* main menu */
@@ -3368,7 +3306,6 @@ void menu_maybe_init ( void )
 	snprintf( name, sizeof(name), "Player Fly Speed: %0.01f", set.fly_player_speed );
 	menu_item_add( menu_cheats, NULL, name, ID_CHEAT_FLY_SPEED, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Disable Water Waves", ID_CHEAT_DISABLE_WAVES, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_cheats, NULL, "Surf", ID_CHEAT_SURF, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Freeze vehicle spin", ID_CHEAT_FREEZEROT, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_cheats, NULL, "Draw map lines", ID_CHEAT_MAP_DRAW_LINES, MENU_COLOR_DEFAULT, NULL );
 
@@ -3580,23 +3517,16 @@ void menu_maybe_init ( void )
 	menu_item_add( menu_hudindicators, NULL, "Render text shadows", ID_HUDIND_TSHADOWS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Inv", ID_HUDIND_INV, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Weapon", ID_HUDIND_WEAPON, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "Money", ID_HUDIND_MONEY, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Freeze", ID_HUDIND_FREEZE, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "In vehicle AirBrk", ID_HUDIND_INVEH_AIRBRK, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "In vehicle Stick", ID_HUDIND_INVEH_STICK, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "In vehicle BrkDance", ID_HUDIND_INVEH_BRKDANCE, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "In vehicle SpiderWheels", ID_HUDIND_INVEH_SPIDER, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "In vehicle Fly", ID_HUDIND_INVEH_FLY, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "On foot AirBrk", ID_HUDIND_ONFOOT_AIRBRK, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "On foot Stick", ID_HUDIND_ONFOOT_STICK, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "On foot Fly", ID_HUDIND_ONFOOT_FLY, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "Aim", ID_HUDIND_ONFOOT_AIM, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "Surf", ID_HUDIND_SURF, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "FreezeRot", ID_HUDIND_FREEZEROT, MENU_COLOR_DEFAULT, NULL );
 
 	menu_item_add( menu_hudindicators, NULL, "Position", ID_HUDIND_POS, MENU_COLOR_DEFAULT, NULL );
 	menu_item_add( menu_hudindicators, NULL, "FPS", ID_HUDIND_FPS, MENU_COLOR_DEFAULT, NULL );
-	menu_item_add( menu_hudindicators, NULL, "Toggle left bottom bars", ID_HUDIND_LB_BARS, MENU_COLOR_DEFAULT, NULL );
 
 	if ( g_dwSAMP_Addr != NULL )
 	{

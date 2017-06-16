@@ -12,6 +12,9 @@ void getPlayerList();
 void initAdminSettings()
 {
     traceLastFunc("initAdminSettings()");
+
+    CreateDirectoryA(".\\" M0D_FOLDER "gangZones", 0);
+
     A_Set.dwColorTracerHit = 0xFFFF0000;
     A_Set.dwColorTracer = 0xFF0000FF;
     A_Set.dwColorSms = A_Set.dwColorReport = A_Set.dwColorReportr = A_Set.dwColorSupport = A_Set.dwColorFeedback = 0xFFFFFFFF;
@@ -43,6 +46,10 @@ void initAdminSettings()
         std::make_pair("trace", keycombo{2, { VK_LMENU, 'Z' }})
     };
 
+    A_Set.bHudPing = true;
+    A_Set.fontName = "Tahoma";
+    A_Set.byteFontHeight = 9;
+
     iniSetting();
     getAdminList();
     getPlayerList();
@@ -50,11 +57,11 @@ void initAdminSettings()
     A_Set.Tracers.reserve(A_Set.usTraceMaxCount);
 
     if (A_Set.bLogBan)
-        fopen_s(&A_Set.fLogBan, ".\\" M0D_FOLDER "ban.log", "a");
+        A_Set.fLogBan = fopen(".\\" M0D_FOLDER "ban.log", "a");
     if (A_Set.bLogWarn)
-        fopen_s(&A_Set.fLogWarn, ".\\" M0D_FOLDER "warn.log", "a");
+        A_Set.fLogWarn = fopen(".\\" M0D_FOLDER "warn.log", "a");
     if (A_Set.bLogKillList)
-        fopen_s(&A_Set.fLogKillList, ".\\" M0D_FOLDER "KillList.log", "a");
+        A_Set.fLogKillList = fopen(".\\" M0D_FOLDER "KillList.log", "a");
 }
 
 void iniSetting()
@@ -148,6 +155,7 @@ void iniSetting()
         A_Set.bLogKillList = A_Ini.GetBoolean("ControlFunc", "LogKillList");
         A_Set.bConnectLog = A_Ini.GetBoolean("ControlFunc", "ConnectLog");
         A_Set.bDisconnectLog = A_Ini.GetBoolean("ControlFunc", "DisconnectLog");
+        A_Set.bHudPing = A_Ini.GetBoolean("ControlFunc", "PingHud");
     }
     else {
         A_Ini.SetBoolean("ControlFunc", "ChatID", A_Set.bChatID);
@@ -156,6 +164,7 @@ void iniSetting()
         A_Ini.SetBoolean("ControlFunc", "LogKillList", A_Set.bLogKillList);
         A_Ini.SetBoolean("ControlFunc", "ConnectLog", A_Set.bConnectLog);
         A_Ini.SetBoolean("ControlFunc", "DisconnectLog", A_Set.bDisconnectLog);
+        A_Ini.SetBoolean("ControlFunc", "PingHud", A_Set.bHudPing);
     }
 
     if (A_Ini.SectionExist("Keys"))
@@ -168,6 +177,16 @@ void iniSetting()
         for (auto &pair : A_Set.keycombo) {
             A_Ini.SetString("Keys", pair.first.c_str(), keycombo2String(pair.second).c_str());
         }
+    }
+
+    if (A_Ini.SectionExist("FontSetting")) {
+        A_Set.byteFontHeight = uint8_t(A_Ini.GetInt("FontSetting", "MainHeight"));
+        A_Set.fontName = A_Ini.GetString("FontSetting", "MainFontName");
+        setFontParams(&pD3DFont, A_Set.fontName.c_str(), A_Set.byteFontHeight);
+    }
+    else {
+        A_Ini.SetInt("FontSetting", "MainHeight", A_Set.byteFontHeight);
+        A_Ini.SetString("FontSetting", "MainFontName", A_Set.fontName.c_str());
     }
 
     menu_free_all();

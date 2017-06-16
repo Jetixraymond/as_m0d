@@ -55,49 +55,61 @@ const char *szFracktionName[] =
 	*/
 void OnCloseDialog(void *pDialog)
 {
-	stDialogInfo Dialog = *(stDialogInfo*)pDialog;
-	switch (Dialog.iType)
-	{
-	case DialogStyle::DIALOG_STYLE_LIST:
-	{
-		int iSelectItem = *(int*)(DWORD(Dialog.pList) + 0x147);
-		switch (Dialog.DialogID)
-		{
-		case 2:
-		{
-			if (A_Set.usSetLeaderID > 999)
-			{
-				return;
-			}
+    stDialogInfo Dialog = *(stDialogInfo*)pDialog;
+    switch (Dialog.iType)
+    {
+    case DialogStyle::DIALOG_STYLE_LIST:
+    {
+        int iSelectItem = *(int*)(DWORD(Dialog.pList) + 0x147);
+        switch (Dialog.DialogID)
+        {
+        case 2:
+        {
+            if (A_Set.usSetLeaderID > 999)
+            {
+                return;
+            }
 
-			if (iSelectItem < 20)
-				A_Set.byteFrackID = iSelectItem;
-			else
-				A_Set.byteFrackID = iSelectItem + 1;
+            if (iSelectItem < 20)
+                A_Set.byteFrackID = iSelectItem;
+            else
+                A_Set.byteFrackID = iSelectItem + 1;
 
-			if (A_Set.byteFrackID != 0)
-				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Подтверждение", (char *)std::string("Вы уверены что хотите назначить " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " на лидерство " + szFracktionName[A_Set.byteFrackID - 1]/*std::string(getfractionname(byteFrackID))*/).c_str(), "Назначить", "Закрыть");
-			else
-				ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Подтверждение", (char *)std::string("Вы уверены что хотите cнять " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " с лидерства").c_str(), "Назначить", "Закрыть");
-			break;
-		}
-		}
-		break;
-	}
+            if (A_Set.byteFrackID != 0)
+                ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Подтверждение", (char *)std::string("Вы уверены что хотите назначить " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " на лидерство " + szFracktionName[A_Set.byteFrackID - 1]/*std::string(getfractionname(byteFrackID))*/).c_str(), "Назначить", "Закрыть");
+            else
+                ShowLocalSampDialog(3, DIALOG_STYLE_MSGBOX, "Подтверждение", (char *)std::string("Вы уверены что хотите cнять " + std::string(getPlayerName(A_Set.usSetLeaderID)) + " с лидерства").c_str(), "Назначить", "Закрыть");
+            break;
+        }
+        }
+        break;
+    }
+    case DialogStyle::DIALOG_STYLE_MSGBOX:
+    {
+        switch (Dialog.DialogID)
+        {
+        case 3:
+            say("/makeleader %hd %hhd", A_Set.usSetLeaderID, A_Set.byteFrackID);
+            break;
+        }
+        break;
+    }
 
-	case DialogStyle::DIALOG_STYLE_INPUT:
-	case DialogStyle::DIALOG_STYLE_PASSWORD:
-	case DialogStyle::DIALOG_STYLE_MSGBOX:
-	{
-		switch (Dialog.DialogID)
-		{
-		case 3:
-			say("/makeleader %hd %hhd", A_Set.usSetLeaderID, A_Set.byteFrackID);
-			break;
-		}
-		break;
-	}
-	}
+    case DialogStyle::DIALOG_STYLE_INPUT:
+    case DialogStyle::DIALOG_STYLE_PASSWORD:
+        char input[256];
+        wchar_t *inputBuf = *(wchar_t **)(uint32_t(g_Dialog->pEditBox) + 0x4D);
+        UnicodeToAnsi(inputBuf, input);
+        switch (Dialog.DialogID)
+        {
+        case 523:
+            setFontParams(&pD3DFont, input, A_Set.byteFontHeight);
+            A_Set.fontName = input;
+            A_Ini.SetString("FontSetting", "MainFontName", input);
+            break;
+        }
+        break;
+    }
 }
 
 bool stringToD3DColor(const char* szStrColor, D3DCOLOR* dwOutColor)
@@ -175,6 +187,16 @@ std::string keycombo2String(const keycombo &keycombo)
     return ret;
 }
 
+void setFontParams(CD3DFont **pFont, const char *fontName, uint8_t fontHeight)
+{
+    /*delete pD3DFont;
+    pD3DFont = new CD3DFont(A_Set.fontName.c_str(), A_Set.byteFontHeight, FCR_BORDER);
+    pD3DFont->Initialize(origIDirect3DDevice9);*/
+    delete *pFont;
+    *pFont = new CD3DFont(fontName, fontHeight, FCR_BORDER);
+    (*pFont)->Initialize(origIDirect3DDevice9);
+}
+
 inline bool operator<=(const POINT &a, const POINT &b)
 {
     return a.x <= b.x && a.y <= b.y;
@@ -208,6 +230,13 @@ inline POINT operator-(const POINT &a, const POINT &b)
     POINT tmp(a);
     tmp.x -= b.x;
     tmp.y -= b.y;
+    return tmp;
+}
+
+inline POINT operator-(const POINT &a, const long &b)
+{
+    POINT tmp(a);
+    tmp.x -= b;
     return tmp;
 }
 
@@ -281,9 +310,12 @@ LRESULT CALLBACK LLKeyProc(int nCode, WPARAM wParam, LPARAM lParam)
                             addMessageToChatWindow("[KEY_HOOK] Unknown key: 0x%X. Данная клавиша проигнорирована для бинда. Если требуется отпишитесь.", vk);
                         }
                         else {
-                            parAdminSetting.keycombo.emplace_back(uint8_t(vk), key);//.push_back(std::make_pair(vk, key));
-                            if (parAdminSetting.keycombo.size() >= INI_KEYCOMBO_MAX) {
-                                endKeyHook();
+                            if (std::find_if(parAdminSetting.keycombo.cbegin(), parAdminSetting.keycombo.cend(), 
+                                [&vk](const std::pair<uint8_t, std::string> &pair) { return pair.first == vk; }) == parAdminSetting.keycombo.cend()){
+                                parAdminSetting.keycombo.emplace_back(uint8_t(vk), key);//.push_back(std::make_pair(vk, key));
+                                if (parAdminSetting.keycombo.size() >= INI_KEYCOMBO_MAX) {
+                                    endKeyHook();
+                                }
                             }
                         }
                         return 0;
@@ -424,58 +456,74 @@ void adminMainThread(void)
 
     if (KEY_DOWN(0x1)) {
         POINT cursorPos = CursorPos();
-        static POINT offset, newPos;
+        static POINT offset, newPos, min = { 0, 0 }, max = { *(int*)0xC9C040, *(int*)0xC9C044 }, size;
+        if ((cursorPos - offset) >= min && (cursorPos - offset) <= (max - size)) {
+            size_t aCount = A_Set.AdminsOnline.size(), pCount = A_Set.PlayersOnline.size();
 
-        if (cursorPos >= A_Set.aCheckPos && cursorPos <= (A_Set.aCheckPos + POINT{ long(pD3DFont->DrawLength("Админы в сети:")), pD3DFont->DrawHeight() /* * (1 + A_Set.AOnline.size())*/ })) {
-            if (KEY_PRESSED(0x1)) {
-                offset = cursorPos - A_Set.aCheckPos;
-            }
-            newPos = cursorPos - offset;
-            if (A_Set.aCheckPos != newPos) {
-                A_Set.aCheckPos = newPos;
-                A_Ini.SetInt("Position", "AdminChecker_X", A_Set.aCheckPos.x);
-                A_Ini.SetInt("Position", "AdminChecker_Y", A_Set.aCheckPos.y);
-            }
-        }
-        else {
-            if (cursorPos >= A_Set.pCheckPos && cursorPos <= (A_Set.pCheckPos + POINT{ long(pD3DFont->DrawLength("Игроки в сети:")), pD3DFont->DrawHeight() })) {
+            if (cursorPos >= A_Set.aCheckPos && cursorPos <= (A_Set.aCheckPos + POINT{ long(pD3DFont->DrawLength("Нет админов в сети")), pD3DFont->DrawHeight() * (1 + (aCount == 0 ? 1 : aCount)) })) {
                 if (KEY_PRESSED(0x1)) {
-                    offset = cursorPos - A_Set.pCheckPos;
+                    offset = cursorPos - A_Set.aCheckPos;
+                    size.x = uint16_t(pD3DFont->DrawLength("Нет админов в сети"));
+                    size.y = pD3DFont->DrawHeight() * (1 + (aCount == 0 ? 1 : aCount));
                 }
                 newPos = cursorPos - offset;
-                if (A_Set.pCheckPos != newPos) {
-                    A_Set.pCheckPos = newPos;
-                    A_Ini.SetInt("Position", "PlayerChecker_X", A_Set.pCheckPos.x);
-                    A_Ini.SetInt("Position", "PlayerChecker_Y", A_Set.pCheckPos.y);
+                if (A_Set.aCheckPos != newPos) {
+                    A_Set.aCheckPos = newPos;
+                    A_Ini.SetInt("Position", "AdminChecker_X", A_Set.aCheckPos.x);
+                    A_Ini.SetInt("Position", "AdminChecker_Y", A_Set.aCheckPos.y);
                 }
             }
             else {
-                if ((A_Set.bConnectLog || A_Set.bDisconnectLog) && (cursorPos >= A_Set.connectionPos && cursorPos <= (A_Set.connectionPos + POINT{ long(pD3DFont->DrawLength(" подключен к серверу") + 15), pD3DFont->DrawHeight() * 2 }))) {
+                if (cursorPos >= A_Set.pCheckPos && cursorPos <= (A_Set.pCheckPos + POINT{ long(pD3DFont->DrawLength("Нет игроков в сети")), pD3DFont->DrawHeight() * (1 + (pCount == 0 ? 1 : pCount)) })) {
                     if (KEY_PRESSED(0x1)) {
-                        offset = cursorPos - A_Set.connectionPos;
+                        offset = cursorPos - A_Set.pCheckPos;
+                        size.x = uint16_t(pD3DFont->DrawLength("Нет игроков в сети"));
+                        size.y = pD3DFont->DrawHeight() * (1 + (pCount == 0 ? 1 : pCount));
                     }
                     newPos = cursorPos - offset;
-                    if (A_Set.connectionPos != newPos) {
-                        A_Set.connectionPos = newPos;
-                        A_Ini.SetInt("Position", "Connection_X", A_Set.connectionPos.x);
-                        A_Ini.SetInt("Position", "Connection_Y", A_Set.connectionPos.y);
+                    if (A_Set.pCheckPos != newPos) {
+                        A_Set.pCheckPos = newPos;
+                        A_Ini.SetInt("Position", "PlayerChecker_X", A_Set.pCheckPos.x);
+                        A_Ini.SetInt("Position", "PlayerChecker_Y", A_Set.pCheckPos.y);
                     }
                 }
                 else {
-                    if (cursorPos >= (A_Set.killListPos - POINT{ long(pD3DFont->DrawLength("D")) * 18, 0 }) && cursorPos <= (A_Set.killListPos + POINT{ long(pD3DFont->DrawLength("D")) * 18, 24 * 5 })) {
+                    if ((A_Set.bConnectLog || A_Set.bDisconnectLog) && (cursorPos >= A_Set.connectionPos && cursorPos <= (A_Set.connectionPos + POINT{ long(pD3DFont->DrawLength(" подключен к серверу") + 20), pD3DFont->DrawHeight() * 2 }))) {
                         if (KEY_PRESSED(0x1)) {
-                            offset = cursorPos - A_Set.killListPos;
+                            offset = cursorPos - A_Set.connectionPos;
+                            size.x = uint16_t(pD3DFont->DrawLength(" подключен к серверу") + 20);
+                            size.y = pD3DFont->DrawHeight() * 2;
                         }
                         newPos = cursorPos - offset;
-                        if (A_Set.killListPos != newPos) {
-                            A_Set.killListPos = newPos;
-                            A_Ini.SetInt("Position", "KillList_X", A_Set.killListPos.x);
-                            A_Ini.SetInt("Position", "KillList_Y", A_Set.killListPos.y);
+                        if (A_Set.connectionPos != newPos) {
+                            A_Set.connectionPos = newPos;
+                            A_Ini.SetInt("Position", "Connection_X", A_Set.connectionPos.x);
+                            A_Ini.SetInt("Position", "Connection_Y", A_Set.connectionPos.y);
+                        }
+                    }
+                    else {
+                        if (cursorPos >= (A_Set.killListPos - long(pD3DFont->DrawLength("D")) * 18) && cursorPos <= (A_Set.killListPos + POINT{ long(pD3DFont->DrawLength("D")) * 18, 24 * 5 })) {
+                            if (KEY_PRESSED(0x1)) {
+                                offset = cursorPos - A_Set.killListPos;
+                                size.x = uint16_t(pD3DFont->DrawLength("D")) * 18;
+                                size.y = 24 * 5;
+                            }
+                            newPos = cursorPos - offset;
+                            if (A_Set.killListPos != newPos) {
+                                A_Set.killListPos = newPos;
+                                A_Ini.SetInt("Position", "KillList_X", A_Set.killListPos.x);
+                                A_Ini.SetInt("Position", "KillList_Y", A_Set.killListPos.y);
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+    if (KEY_PRESSED('R')) {
+        g_Input->iInputEnabled = 1;
+        g_Input->pDXUTEditBox->bIsChatboxOpen = 1;
     }
 }
 

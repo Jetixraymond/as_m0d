@@ -92,8 +92,6 @@ struct settings
 
 	keycombo				key_anti_freeze;
 
-	keycombo				key_autoaim_toggle;
-	int						use_gta_autoaim;
 
 	keycombo				key_map;
 	keycombo				key_map_show_vehicles;
@@ -162,23 +160,6 @@ struct settings
 	keycombo				key_quick_turn_left;
 	keycombo				key_quick_turn_right;
 
-	keycombo				key_stick;
-	keycombo				key_stick_prev;
-	keycombo				key_stick_next;
-	keycombo				key_stick_nearest;
-	keycombo				key_stick_forward;
-	keycombo				key_stick_backward;
-	keycombo				key_stick_left;
-	keycombo				key_stick_right;
-	keycombo				key_stick_up;
-	keycombo				key_stick_down;
-	keycombo				key_stick_in;
-	keycombo				key_stick_out;
-	float					stick_min_height;
-	float					stick_vect[4];	/* must be 4d! */
-	float					stick_vect_dist;
-	float					stick_accel_time;
-
 	keycombo				key_checkpoint_1;
 	keycombo				key_checkpoint_2;
 	float					checkpoint_min_height;
@@ -199,8 +180,6 @@ struct settings
 
 	keycombo				key_self_destruct;
 	keycombo				key_engine;
-	keycombo				key_vehicle_jumper;
-	keycombo				key_vehicle_occupied_jumper;
 
 	keycombo				key_weapon;
 	int						weapon_enabled;
@@ -211,15 +190,6 @@ struct settings
 	int						ammo_clip;
 
 	struct weapon_entry		*weapon[13];
-
-	keycombo				key_money;
-	int						money_value;
-	int						money_enabled;
-	int						money_amount_max;
-	int						money_amount_rand_min;
-	int						money_amount_rand_max;
-	int						money_interval_rand_min;
-	int						money_interval_rand_max;
 
 	keycombo				key_menu;
 	int						key_menu_up;
@@ -233,23 +203,16 @@ struct settings
 
 	int						hud_draw_bar;
 	int						render_text_shadows;
-	int						left_bottom_bars_enable;
 	struct gui				guiset[INI_GUI_MAX];
 
 	int						hud_indicator_inv;
 	int						hud_indicator_weapon;
-	int						hud_indicator_money;
 	int						hud_indicator_freeze;
 
 	int						hud_indicator_inveh_airbrk;
-	int						hud_indicator_inveh_stick;
-	int						hud_indicator_inveh_brkdance;
-	int						hud_indicator_inveh_spider;
 	int						hud_indicator_inveh_fly;
 
 	int						hud_indicator_onfoot_airbrk;
-	int						hud_indicator_onfoot_stick;
-	int						hud_indicator_onfoot_aim;
 	int						hud_indicator_onfoot_fly;
 
 	int						hud_indicator_pos;
@@ -261,11 +224,6 @@ struct settings
 
 	int						d3dtext_hud;
 
-	int						speedometer_enable;
-	int						speedometer_old_enable;
-	float					speedometer_multiplier;
-	char					speedometer_speedo_png_filename[32];
-	char					speedometer_needle_png_filename[32];
 
 	int						chams_on;
 	int						chams_wireframe;
@@ -296,7 +254,6 @@ struct settings
 	keycombo				key_clickwarp_enable;
 	keycombo				key_clickwarp_click;
 
-	keycombo				key_player_info_list;
 	keycombo				key_fast_exit;
 
 	int						anti_carjacking;
@@ -322,12 +279,6 @@ struct settings
 	keycombo				key_vehicle_hop;
 	float					vehicle_hop_speed;
 
-	keycombo				key_spiderwheels;
-	/*
-	int						key_spiderfeet;
-	int						key_ninjaflipfront;
-	int						key_ninjaflipback;
-	*/
 
 	keycombo				key_fly_player;
 	int						key_fly_player_accelerate;
@@ -355,15 +306,6 @@ struct settings
 	int						custom_runanimation_enabled;
 	int						custom_runanimation_id;
 
-	keycombo				key_brkd_toggle;
-	keycombo				key_brkd_forward;
-	keycombo				key_brkd_left;
-	keycombo				key_brkd_backward;
-	keycombo				key_brkd_right;
-	keycombo				key_brkd_rightward;
-	keycombo				key_brkd_leftward;
-	float					brkdance_velocity;
-
 	keycombo				key_fly_vehicle;
 	keycombo				key_fly_vehicle_modeChange;
 	int						fly_vehicle_heliMode;
@@ -386,12 +328,7 @@ struct settings
 	int						map_must_be_open;
 	int						map_draw_lines;
 	
-	keycombo				key_quickwarp;
-	keycombo				key_surf;
 	keycombo				key_freezerot;
-
-	int						hud_indicator_surf;
-	int						hud_indicator_freezerot;
 
 	stNetPatch				netPatch[INI_NETPATCHES_MAX];
 	stNetPatch				*netPatchAssoc[RAKNET_MAX_PACKET][4];

@@ -43,6 +43,7 @@ struct AdminSetting
 
     std::string aCheckerMsg, pCheckerMsg;
     std::string connectLog, disconnectLog;
+    std::string fontName;
 
     uint64_t connectTime, disconnectTime;
     POINT aCheckPos, pCheckPos, killListPos, connectionPos;
@@ -60,19 +61,20 @@ struct AdminSetting
     DWORD dwColorSupport;
     DWORD dwColorFeedback;
 #pragma endregion
-	int iHpCount = 100;
-	int iAmmoCount = 100;
+	int iHpCount;
+	int iAmmoCount;
 
 	/*2 bytes*/
-	unsigned short usSetLeaderID = -1;
-	unsigned short usMaxPlayerTP = 0;
-	unsigned short usTraceID = 0;
-	unsigned short usTraceMaxCount = 20;
+	unsigned short usSetLeaderID;
+	unsigned short usMaxPlayerTP;
+	unsigned short usTraceID;
+	unsigned short usTraceMaxCount;
 
 	/*1 bytes*/
-	unsigned char byteFrackID = 0;
-	unsigned char byteWeaponID = 0;
-	unsigned char byteSkillWeaponID = 0;
+	unsigned char byteFrackID;
+	unsigned char byteWeaponID;
+	unsigned char byteSkillWeaponID;
+    uint8_t       byteFontHeight;
 
 #pragma region ChatColorControl
 	bool bChatcolor;
@@ -97,6 +99,7 @@ struct AdminSetting
     bool bLogBan;
     bool bLogWarn;
     bool bLogKillList;
+    bool bHudPing;
 };
 
 struct stSettingParams

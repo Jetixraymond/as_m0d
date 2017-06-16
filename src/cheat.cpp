@@ -184,7 +184,6 @@ void cheat_hook ( HWND wnd )
 		// set default cheat_state variables
 		cheat_state = &__cheat_state;
 		cheat_state->_generic.spoof_weapon = -1;
-		cheat_state->_generic.money = set.money_enabled;
 		cheat_state->_generic.weapon = set.weapon_enabled;
 		cheat_state->_generic.vehicles_unlock = false;
 		cheat_state->_generic.vehicles_warp_invert = true;
@@ -427,18 +426,6 @@ void cheat_hook ( HWND wnd )
 			{
 				set.netPatch[i].enabled ^= true;
 			}
-		}
-
-		if ( KEYCOMBO_PRESSED(set.key_vehicle_jumper) )
-		{
-			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE + VEHICLE_NOTBURNING );
-			vehicleJumper( iVehicleID );
-		}
-
-		if ( KEYCOMBO_PRESSED(set.key_vehicle_occupied_jumper) )
-		{
-			int iVehicleID = vehicle_find_nearest( VEHICLE_ALIVE + VEHICLE_NOTBURNING + VEHICLE_OCCUPIED );
-			vehicleJumper( iVehicleID );
 		}
 	}	// cheat_state->state != CHEAT_STATE_NONE
 
